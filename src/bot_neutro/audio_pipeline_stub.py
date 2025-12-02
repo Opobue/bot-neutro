@@ -1,5 +1,12 @@
 import uuid
+from datetime import datetime
 from typing import Dict, Optional, Protocol, TypedDict, Union
+
+from .audio_storage_inmemory import (
+    AudioSession,
+    DEFAULT_AUDIO_SESSION_REPOSITORY,
+    InMemoryAudioSessionRepository,
+)
 
 
 class AudioRequestContext(TypedDict):
@@ -42,6 +49,9 @@ class AudioPipeline(Protocol):
 
 
 class StubAudioPipeline:
+    def __init__(self, repository: InMemoryAudioSessionRepository | None = None) -> None:
+        self._repository = repository or DEFAULT_AUDIO_SESSION_REPOSITORY
+
     def process(self, ctx: AudioRequestContext) -> Union[AudioResponseContext, PipelineError]:
         if not ctx["api_key_id"]:
             return PipelineError(
@@ -69,11 +79,35 @@ class StubAudioPipeline:
         }
         session_id = str(uuid.uuid4())
 
+        session: AudioSession = {
+            "id": session_id,
+            "corr_id": ctx["corr_id"],
+            "api_key_id": ctx["api_key_id"],
+            "user_external_id": None,
+            "created_at": datetime.utcnow(),
+            "request_mime_type": ctx["mime_type"],
+            "request_duration_seconds": None,
+            "transcript": "stub transcript",
+            "reply_text": "stub reply text",
+            "tts_available": True,
+            "tts_storage_ref": "https://example.com/audio/stub.wav",
+            "usage_stt_ms": usage["stt_ms"],
+            "usage_llm_ms": usage["llm_ms"],
+            "usage_tts_ms": usage["tts_ms"],
+            "usage_total_ms": usage["total_ms"],
+            "provider_stt": usage["provider_stt"],
+            "provider_llm": usage["provider_llm"],
+            "provider_tts": usage["provider_tts"],
+            "meta_tags": None,
+        }
+
+        self._repository.create(session)
+
         return AudioResponseContext(
-            transcript="stub transcript",
-            reply_text="stub reply text",
+            transcript=session["transcript"],
+            reply_text=session["reply_text"],
             tts_audio_bytes=None,
-            tts_audio_url="https://example.com/audio/stub.wav",
+            tts_audio_url=session["tts_storage_ref"],
             usage=usage,
             session_id=session_id,
         )
