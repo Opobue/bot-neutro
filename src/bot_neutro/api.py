@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from . import __version__
 from .audio_pipeline_stub import AudioRequestContext, StubAudioPipeline
 from .middleware import CorrelationIdMiddleware, JSONLoggingMiddleware, RateLimitMiddleware
+from .metrics_runtime import METRICS
 
 
 METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
@@ -56,26 +57,40 @@ def create_app() -> FastAPI:
 
     @app.get("/healthz")
     async def healthcheck(request: Request):
+        METRICS.inc_request("/healthz")
         response = JSONResponse({"status": "ok"})
         _with_outcome(response)
         return response
 
     @app.get("/readyz")
     async def readiness(request: Request):
+        METRICS.inc_request("/readyz")
         response = JSONResponse({"status": "ok"})
         _with_outcome(response)
         return response
 
     @app.get("/version")
     async def version(request: Request):
+        METRICS.inc_request("/version")
         response = JSONResponse({"version": __version__})
         _with_outcome(response)
         return response
 
     @app.get("/metrics")
     async def metrics(request: Request):
+        METRICS.inc_request("/metrics")
+        snapshot = METRICS.snapshot()
+        dynamic_lines = []
+
+        for route, value in snapshot["requests_total"].items():
+            dynamic_lines.append(f'sensei_requests_total{{route="{route}"}} {value}')
+
+        for route, value in snapshot["errors_total"].items():
+            dynamic_lines.append(f'errors_total{{route="{route}"}} {value}')
+
+        payload = METRICS_PAYLOAD + "\n" + "\n".join(dynamic_lines) if dynamic_lines else METRICS_PAYLOAD
         response = PlainTextResponse(
-            METRICS_PAYLOAD,
+            payload,
             media_type="text/plain; version=0.0.4; charset=utf-8",
         )
         _with_outcome(response)
@@ -103,6 +118,7 @@ def create_app() -> FastAPI:
         x_munay_user_id: Optional[str] = Header(None, alias="x-munay-user-id"),
         x_munay_context: Optional[str] = Header(None, alias="x-munay-context"),
     ):
+        METRICS.inc_request("/audio")
         corr_id = x_correlation_id or str(uuid4())
 
         if file is None:
@@ -148,6 +164,7 @@ def create_app() -> FastAPI:
             status_code, detail_value = ERROR_STATUS_MAPPING.get(
                 result["code"], (500, "audio.internal_error")
             )
+            METRICS.inc_error("/audio")
             response = JSONResponse({"detail": result.get("message")}, status_code=status_code)
             _with_outcome(response, outcome="error", detail=detail_value)
         else:
