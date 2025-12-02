@@ -46,8 +46,8 @@ def create_app() -> FastAPI:
     app = FastAPI(title="bot-neutro", version=__version__)
 
     app.add_middleware(CorrelationIdMiddleware)
-    app.add_middleware(JSONLoggingMiddleware)
     app.add_middleware(RateLimitMiddleware)
+    app.add_middleware(JSONLoggingMiddleware)
 
     @app.middleware("http")
     async def set_default_outcome(request: Request, call_next):
