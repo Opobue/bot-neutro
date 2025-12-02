@@ -113,3 +113,55 @@ def test_audio_happy_path_creates_audio_session_in_repository():
     assert session["provider_stt"] == data["usage"]["provider_stt"]
     assert session["provider_llm"] == data["usage"]["provider_llm"]
     assert session["provider_tts"] == data["usage"]["provider_tts"]
+
+
+def test_audio_with_munay_headers_populates_user_and_context_in_session():
+    repo = DEFAULT_AUDIO_SESSION_REPOSITORY
+    repo.clear()
+
+    response = client.post(
+        "/audio",
+        files={"file": ("test.wav", b"fake audio", "audio/wav")},
+        headers={
+            "X-API-Key": "test-key",
+            "X-Correlation-Id": "corr-123",
+            "x-munay-user-id": "user-123",
+            "x-munay-context": "diario_emocional",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    session_id = data["session_id"]
+
+    sessions = repo.list_by_api_key("test-key", limit=10, offset=0)
+    assert len(sessions) == 1
+
+    session = sessions[0]
+    assert session["id"] == session_id
+    assert session["user_external_id"] == "user-123"
+    assert session["corr_id"] == "corr-123"
+
+    assert session["meta_tags"] is not None
+    assert session["meta_tags"].get("context") == "diario_emocional"
+
+
+def test_audio_with_invalid_munay_context_returns_bad_request():
+    response = client.post(
+        "/audio",
+        files={"file": ("test.wav", b"fake audio", "audio/wav")},
+        headers={
+            "X-API-Key": "test-key",
+            "x-munay-user-id": "user-123",
+            "x-munay-context": "invalid_context",
+        },
+    )
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "detail" in body
+    assert body["detail"] == "invalid x-munay-context"
+
+    assert response.headers.get("X-Outcome") == "error"
+    assert response.headers.get("X-Outcome-Detail") == "audio.bad_request"
+    assert response.headers.get("X-Correlation-Id")

@@ -68,6 +68,14 @@ class StubAudioPipeline:
                 details={"mime_type": ctx["mime_type"]},
             )
 
+        metadata = ctx.get("client_metadata")
+        munay_user_id: Optional[str] = None
+        munay_context: Optional[str] = None
+
+        if metadata:
+            munay_user_id = metadata.get("munay_user_id")
+            munay_context = metadata.get("munay_context")
+
         usage: UsageMetrics = {
             "stt_ms": 100,
             "llm_ms": 200,
@@ -83,7 +91,7 @@ class StubAudioPipeline:
             "id": session_id,
             "corr_id": ctx["corr_id"],
             "api_key_id": ctx["api_key_id"],
-            "user_external_id": None,
+            "user_external_id": munay_user_id,
             "created_at": datetime.utcnow(),
             "request_mime_type": ctx["mime_type"],
             "request_duration_seconds": None,
@@ -98,7 +106,7 @@ class StubAudioPipeline:
             "provider_stt": usage["provider_stt"],
             "provider_llm": usage["provider_llm"],
             "provider_tts": usage["provider_tts"],
-            "meta_tags": None,
+            "meta_tags": {"context": munay_context} if munay_context else None,
         }
 
         self._repository.create(session)

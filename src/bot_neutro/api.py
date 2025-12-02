@@ -1,5 +1,5 @@
 from uuid import uuid4
-from typing import Optional
+from typing import Dict, Optional
 
 from fastapi import FastAPI, File, Header, Request, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse
@@ -93,11 +93,15 @@ def create_app() -> FastAPI:
         "internal_error": (500, "audio.internal_error"),
     }
 
+    VALID_MUNAY_CONTEXTS = {"diario_emocional", "coach_habitos", "reflexion_general"}
+
     @app.post("/audio")
     async def audio(
         file: UploadFile = File(...),
         x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
         x_correlation_id: Optional[str] = Header(None, alias="X-Correlation-Id"),
+        x_munay_user_id: Optional[str] = Header(None, alias="x-munay-user-id"),
+        x_munay_context: Optional[str] = Header(None, alias="x-munay-context"),
     ):
         corr_id = x_correlation_id or str(uuid4())
 
@@ -115,14 +119,27 @@ def create_app() -> FastAPI:
                 raw_audio = await file.read()
                 if not raw_audio:
                     result = {"code": "bad_request", "message": "empty audio", "details": None}
+                elif x_munay_context and x_munay_context not in VALID_MUNAY_CONTEXTS:
+                    result = {
+                        "code": "bad_request",
+                        "message": "invalid x-munay-context",
+                        "details": {"x-munay-context": x_munay_context},
+                    }
                 else:
+                    client_metadata: Dict[str, str] = {}
+
+                    if x_munay_user_id:
+                        client_metadata["munay_user_id"] = x_munay_user_id
+                    if x_munay_context:
+                        client_metadata["munay_context"] = x_munay_context
+
                     ctx: AudioRequestContext = {
                         "corr_id": corr_id,
                         "api_key_id": x_api_key or "",
                         "raw_audio": raw_audio,
                         "mime_type": mime_type,
                         "language_hint": None,
-                        "client_metadata": None,
+                        "client_metadata": client_metadata or None,
                     }
                     pipeline = StubAudioPipeline()
                     result = pipeline.process(ctx)
