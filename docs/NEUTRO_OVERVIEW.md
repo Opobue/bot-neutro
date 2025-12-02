@@ -30,6 +30,8 @@ El **Bot Neutro** es la base común para bots como Munay y futuras variantes. De
 - [Contrato de audio](./CONTRATO_NEUTRO_AUDIO.md)
 - [Contrato de LLM](./CONTRATO_NEUTRO_LLM.md)
 - [Contrato de eventos](./CONTRATO_NEUTRO_EVENTOS.md)
+- Nuevos contratos Neutro: [Pipeline de audio](./CONTRATO_NEUTRO_AUDIO_PIPELINE.md) y [Storage de sesiones de audio](./CONTRATO_NEUTRO_STORAGE_SESIONES_AUDIO.md).
+- Contratos cliente de referencia (Munay): [Módulo de audio](./MUNAY_CONTRATO_MODULO_AUDIO.md) y [Progreso de usuario](./MUNAY_CONTRATO_PROGRESO_USUARIO.md).
 
 ## Compatibilidad con tests actuales
 - Mantiene la enumeración de endpoints (`/healthz`, `/readyz`, `/version`, `/metrics`, `/audio`) que ya son verificados por la suite.
