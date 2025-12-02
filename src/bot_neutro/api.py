@@ -1,7 +1,11 @@
-from fastapi import FastAPI, Request
+from uuid import uuid4
+from typing import Optional
+
+from fastapi import FastAPI, File, Header, Request, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from . import __version__
+from .audio_pipeline_stub import AudioRequestContext, StubAudioPipeline
 from .middleware import CorrelationIdMiddleware, JSONLoggingMiddleware, RateLimitMiddleware
 
 
@@ -77,10 +81,78 @@ def create_app() -> FastAPI:
         _with_outcome(response)
         return response
 
+    ERROR_STATUS_MAPPING = {
+        "bad_request": (400, "audio.bad_request"),
+        "unsupported_media_type": (415, "audio.unsupported_media_type"),
+        "unauthorized": (401, "auth.unauthorized"),
+        "stt_error": (502, "audio.stt_error"),
+        "llm_error": (502, "audio.llm_error"),
+        "tts_error": (502, "audio.tts_error"),
+        "provider_timeout": (504, "audio.provider_timeout"),
+        "storage_error": (503, "audio.storage_error"),
+        "internal_error": (500, "audio.internal_error"),
+    }
+
     @app.post("/audio")
-    async def audio(request: Request):
-        response = JSONResponse({"detail": "audio endpoint stub"}, status_code=501)
-        _with_outcome(response, outcome="error")
+    async def audio(
+        file: UploadFile = File(...),
+        x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
+        x_correlation_id: Optional[str] = Header(None, alias="X-Correlation-Id"),
+    ):
+        corr_id = x_correlation_id or str(uuid4())
+
+        if file is None:
+            result = {"code": "bad_request", "message": "file required", "details": None}
+        else:
+            mime_type = file.content_type or ""
+            if not mime_type.startswith("audio/"):
+                result = {
+                    "code": "unsupported_media_type",
+                    "message": "unsupported media type",
+                    "details": {"mime_type": mime_type},
+                }
+            else:
+                raw_audio = await file.read()
+                if not raw_audio:
+                    result = {"code": "bad_request", "message": "empty audio", "details": None}
+                else:
+                    ctx: AudioRequestContext = {
+                        "corr_id": corr_id,
+                        "api_key_id": x_api_key or "",
+                        "raw_audio": raw_audio,
+                        "mime_type": mime_type,
+                        "language_hint": None,
+                        "client_metadata": None,
+                    }
+                    pipeline = StubAudioPipeline()
+                    result = pipeline.process(ctx)
+
+        if "code" in result:
+            status_code, detail_value = ERROR_STATUS_MAPPING.get(
+                result["code"], (500, "audio.internal_error")
+            )
+            response = JSONResponse({"detail": result.get("message")}, status_code=status_code)
+            _with_outcome(response, outcome="error", detail=detail_value)
+        else:
+            response_body = {
+                "transcript": result["transcript"],
+                "reply_text": result["reply_text"],
+                "audio_url": result["tts_audio_url"],
+                "usage": {
+                    "stt_ms": result["usage"]["stt_ms"],
+                    "llm_ms": result["usage"]["llm_ms"],
+                    "tts_ms": result["usage"]["tts_ms"],
+                    "total_ms": result["usage"]["total_ms"],
+                    "provider_stt": result["usage"]["provider_stt"],
+                    "provider_llm": result["usage"]["provider_llm"],
+                    "provider_tts": result["usage"]["provider_tts"],
+                },
+                "session_id": result["session_id"],
+            }
+            response = JSONResponse(response_body)
+            _with_outcome(response, outcome="ok")
+
+        response.headers.setdefault("X-Correlation-Id", corr_id)
         return response
 
     return app
