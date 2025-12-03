@@ -3,6 +3,22 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-02 – Definición del NORTE MUNAY v2.1 + validación automática
+
+- Se crea `docs/02_ESTADO_Y_NORTE.md` como documento fuente del NORTE MUNAY v2.1:
+  - Establece principios operativos.
+  - Define el modelo contracts-first (contratos → historial PR → ADR → código).
+  - Fija SLOs oficiales de audio, reglas de observabilidad y flujo Kaizen (L1/L2/L3).
+  - Define el protocolo de inicio para nuevos hilos (repositorio como fuente de verdad).
+- Se crea el workflow `validate_norte.yml` para:
+  - Verificar la existencia y encabezados de:
+    - `docs/02_ESTADO_Y_NORTE.md`
+    - `docs/HISTORIAL_PR.md`
+  - Fallar el CI cuando haya cambios en contratos (`docs/CONTRATO_*`, `docs/MUNAY_*`)
+    que no estén acompañados por una actualización de `docs/HISTORIAL_PR.md`.
+- Este cambio consolida el NORTE como contrato de gobernanza y hace obligatorio
+  mantener el historial PR sincronizado con cualquier cambio de contrato.
+
 ## 2025-12-02 – Rate limit en /audio + métricas dinámicas
 
 - Se implementa rate limit real sobre `/audio`, controlado por variables de entorno:
