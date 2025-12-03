@@ -1,0 +1,72 @@
+# HISTORIAL_PR – Bot Neutro / Munay
+
+> Convención: el último cambio va arriba. Solo registramos cambios que
+> afectan contratos, comportamiento observable o el Norte del proyecto.
+
+## 2025-12-02 – Rate limit en /audio + métricas dinámicas
+
+- Se implementa rate limit real sobre `/audio`, controlado por variables de entorno:
+  - `RATE_LIMIT_ENABLED`
+  - `RATE_LIMIT_AUDIO_WINDOW_SECONDS`
+  - `RATE_LIMIT_AUDIO_MAX_REQUESTS`
+- Solo se limita `/audio`; rutas `/healthz`, `/readyz`, `/version` y `/metrics` quedan en allowlist.
+- Las respuestas 429 devuelven:
+  - `{"detail": "rate limit exceeded"}`
+  - Headers: `X-Outcome: error`, `X-Outcome-Detail: rate_limit`, `Retry-After`.
+- Se añade `InMemoryMetrics` (`metrics_runtime.py`) para registrar:
+  - `sensei_requests_total{route="…"}`
+  - `errors_total{route="…"}`
+  y exponerlos dinámicamente en `/metrics`, manteniendo el payload estático original.
+- Contratos relacionados:
+  - `CONTRATO_NEUTRO_RATE_LIMIT.md`
+  - `CONTRATO_NEUTRO_OBSERVABILIDAD.md`
+
+## 2025-12-02 – Pipeline de audio + storage de sesiones + headers Munay
+
+- Se define el contrato lógico del pipeline de audio:
+  - `CONTRATO_NEUTRO_AUDIO_PIPELINE.md`:
+    - `AudioRequestContext`, `UsageMetrics`, `AudioResponseContext`, `PipelineError`.
+    - Interfaz `AudioPipeline.process(ctx)`.
+- Se implementa `StubAudioPipeline` en `audio_pipeline_stub.py`:
+  - Valida `api_key`, tipo MIME y que el audio no esté vacío.
+  - Genera respuesta stub con `transcript`, `reply_text`, `usage` y `session_id`.
+- Se añade storage en memoria de sesiones de audio:
+  - `audio_storage_inmemory.py` con `AudioSession` e `InMemoryAudioSessionRepository`.
+  - `DEFAULT_AUDIO_SESSION_REPOSITORY` compartido.
+  - Contrato documentado en `CONTRATO_NEUTRO_STORAGE_SESIONES_AUDIO.md`.
+- El endpoint `/audio` ahora:
+  - Acepta `multipart/form-data` con campo `file`.
+  - Usa `X-API-Key` y `X-Correlation-Id`.
+  - Acepta headers cliente Munay:
+    - `x-munay-user-id`
+    - `x-munay-context` (valores válidos: `diario_emocional`, `coach_habitos`, `reflexion_general`).
+  - Rechaza contextos inválidos con 400 y `X-Outcome-Detail: audio.bad_request`.
+  - Propaga `munay_user_id` y `munay_context` como metadatos hacia la sesión de audio:
+    - `user_external_id`
+    - `meta_tags["context"]`
+- Se añaden tests de contrato de `/audio`:
+  - `tests/test_audio_contract.py` cubre:
+    - Happy path.
+    - Errores por MIME inválido, audio vacío, falta de API key.
+    - Persistencia en `DEFAULT_AUDIO_SESSION_REPOSITORY`.
+    - Enriquecimiento con headers Munay.
+- Contratos relacionados:
+  - `CONTRATO_NEUTRO_AUDIO.md`
+  - `CONTRATO_NEUTRO_AUDIO_PIPELINE.md`
+  - `CONTRATO_NEUTRO_STORAGE_SESIONES_AUDIO.md`
+  - `MUNAY_CONTRATO_MODULO_AUDIO.md`
+  - `MUNAY_CONTRATO_PROGRESO_USUARIO.md`
+
+## 2025-12-02 – Ajuste contratos de headers y observabilidad
+
+- Se aclara la semántica de headers estándar en `CONTRATO_NEUTRO_HEADERS.md`:
+  - `X-Outcome` es obligatorio en todas las respuestas:
+    - `ok` para 2xx
+    - `error` para 4xx/5xx
+  - `X-Outcome-Detail` se reserva para errores (`X-Outcome=error`).
+- Se garantiza que `/healthz`, `/readyz`, `/version` y `/metrics`:
+  - Siempre incluyen `X-Outcome`.
+  - Se integran con las métricas dinámicas a través de `METRICS.inc_request(route)`.
+- Se mantiene el payload estático de `/metrics` para compatibilidad con tests previos,
+  añadiendo solo líneas dinámicas para contadores por ruta.
+
