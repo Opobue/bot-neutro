@@ -1,0 +1,73 @@
+name: Validate NORTE and PR history
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate-norte:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure NORTE and HISTORIAL_PR exist and have correct headers
+        run: |
+          set -e
+          if [ ! -f docs/02_ESTADO_Y_NORTE.md ]; then
+            echo "ERROR: Falta docs/02_ESTADO_Y_NORTE.md"
+            exit 1
+          fi
+          if [ ! -f docs/HISTORIAL_PR.md ]; then
+            echo "ERROR: Falta docs/HISTORIAL_PR.md"
+            exit 1
+          fi
+
+          head -n 1 docs/02_ESTADO_Y_NORTE.md | grep -q "NORTE MUNAY" || {
+            echo "ERROR: Encabezado de docs/02_ESTADO_Y_NORTE.md no coincide con NORTE MUNAY"
+            exit 1
+          }
+
+          head -n 1 docs/HISTORIAL_PR.md | grep -q "HISTORIAL_PR" || {
+            echo "ERROR: Encabezado de docs/HISTORIAL_PR.md no es HISTORIAL_PR"
+            exit 1
+          }
+
+      - name: Fail if contracts changed without HISTORIAL_PR update
+        run: |
+          set -e
+
+          # Determinar base para el diff (PR o push directo a main)
+          BASE_REF="${{ github.base_ref }}"
+          if [ -n "$BASE_REF" ]; then
+            git fetch origin "$BASE_REF"
+            BASE="origin/$BASE_REF"
+          else
+            git fetch origin main || true
+            BASE="origin/main"
+          fi
+
+          CHANGED=$(git diff --name-only "$BASE"...HEAD || git diff --name-only HEAD~1..HEAD)
+
+          echo "Archivos cambiados:"
+          echo "$CHANGED"
+
+          # Buscar cambios en contratos NEUTRO/MUNAY
+          NEED_HISTORY=$(echo "$CHANGED" | grep -E '^docs/(CONTRATO_|MUNAY_)' || true)
+
+          if [ -n "$NEED_HISTORY" ]; then
+            echo "Se detectaron cambios en contratos:"
+            echo "$NEED_HISTORY"
+
+            echo "$CHANGED" | grep -q '^docs/HISTORIAL_PR.md$' || {
+              echo "ERROR: Se modificaron contratos pero no se actualizó docs/HISTORIAL_PR.md"
+              exit 1
+            }
+          else
+            echo "No hay cambios en contratos NEUTRO/MUNAY; no se exige actualización de HISTORIAL_PR."
+          fi
+
