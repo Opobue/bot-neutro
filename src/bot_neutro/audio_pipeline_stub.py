@@ -9,12 +9,16 @@ from .audio_storage_inmemory import (
 )
 
 
-class AudioRequestContext(TypedDict):
+class AudioRequestContext(TypedDict, total=False):
     corr_id: str
     api_key_id: str
+    audio_bytes: bytes
     raw_audio: bytes
     mime_type: str
     language_hint: Optional[str]
+    locale: Optional[str]
+    user_external_id: Optional[str]
+    client_meta: Optional[Dict[str, str]]
     client_metadata: Optional[Dict[str, str]]
 
 
@@ -26,15 +30,18 @@ class UsageMetrics(TypedDict):
     provider_stt: str
     provider_llm: str
     provider_tts: str
+    input_seconds: float
+    output_seconds: float
 
 
 class AudioResponseContext(TypedDict):
     transcript: str
     reply_text: str
-    tts_audio_bytes: Optional[bytes]
-    tts_audio_url: Optional[str]
+    tts_url: Optional[str]
     usage: UsageMetrics
     session_id: Optional[str]
+    corr_id: Optional[str]
+    meta: Optional[Dict[str, str]]
 
 
 class PipelineError(TypedDict):
@@ -53,22 +60,27 @@ class StubAudioPipeline:
         self._repository = repository or DEFAULT_AUDIO_SESSION_REPOSITORY
 
     def process(self, ctx: AudioRequestContext) -> Union[AudioResponseContext, PipelineError]:
-        if not ctx["api_key_id"]:
+        api_key_id = ctx.get("api_key_id")
+        audio_bytes = ctx.get("audio_bytes") or ctx.get("raw_audio")
+        mime_type = ctx.get("mime_type", "")
+        client_metadata = ctx.get("client_meta") or ctx.get("client_metadata")
+
+        if not api_key_id:
             return PipelineError(
                 code="unauthorized", message="missing api key", details=None
             )
 
-        if not ctx["raw_audio"]:
+        if not audio_bytes:
             return PipelineError(code="bad_request", message="empty audio", details=None)
 
-        if not ctx["mime_type"].startswith("audio/"):
+        if not mime_type.startswith("audio/"):
             return PipelineError(
                 code="unsupported_media_type",
                 message="unsupported media type",
-                details={"mime_type": ctx["mime_type"]},
+                details={"mime_type": mime_type},
             )
 
-        metadata = ctx.get("client_metadata")
+        metadata = client_metadata
         munay_user_id: Optional[str] = None
         munay_context: Optional[str] = None
 
@@ -84,16 +96,18 @@ class StubAudioPipeline:
             "provider_stt": "stub-stt",
             "provider_llm": "stub-llm",
             "provider_tts": "stub-tts",
+            "input_seconds": 1.0,
+            "output_seconds": 1.5,
         }
         session_id = str(uuid.uuid4())
 
         session: AudioSession = {
             "id": session_id,
-            "corr_id": ctx["corr_id"],
-            "api_key_id": ctx["api_key_id"],
-            "user_external_id": munay_user_id,
+            "corr_id": ctx.get("corr_id", str(uuid.uuid4())),
+            "api_key_id": api_key_id,
+            "user_external_id": ctx.get("user_external_id") or munay_user_id,
             "created_at": datetime.utcnow(),
-            "request_mime_type": ctx["mime_type"],
+            "request_mime_type": mime_type,
             "request_duration_seconds": None,
             "transcript": "stub transcript",
             "reply_text": "stub reply text",
@@ -114,10 +128,11 @@ class StubAudioPipeline:
         return AudioResponseContext(
             transcript=session["transcript"],
             reply_text=session["reply_text"],
-            tts_audio_bytes=None,
-            tts_audio_url=session["tts_storage_ref"],
+            tts_url=session["tts_storage_ref"],
             usage=usage,
             session_id=session_id,
+            corr_id=session["corr_id"],
+            meta=session.get("meta_tags"),
         )
 
 

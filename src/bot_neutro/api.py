@@ -1,11 +1,17 @@
 from uuid import uuid4
 from typing import Dict, Optional
 
-from fastapi import FastAPI, File, Header, Request, UploadFile
+from fastapi import FastAPI, File, Form, Header, Request, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from . import __version__
-from .audio_pipeline_stub import AudioRequestContext, StubAudioPipeline
+from .audio_pipeline_stub import (
+    AudioRequestContext,
+    AudioResponseContext,
+    PipelineError,
+    StubAudioPipeline,
+)
+from .audio_storage_inmemory import InMemoryAudioSessionRepository
 from .middleware import CorrelationIdMiddleware, JSONLoggingMiddleware, RateLimitMiddleware
 from .metrics_runtime import METRICS
 
@@ -40,6 +46,10 @@ def _with_outcome(response, outcome: str = "ok", detail: str | None = None) -> N
     response.headers.setdefault("X-Outcome", outcome)
     if detail:
         response.headers["X-Outcome-Detail"] = detail
+
+
+audio_session_repo = InMemoryAudioSessionRepository()
+audio_pipeline = StubAudioPipeline(audio_session_repo)
 
 
 def create_app() -> FastAPI:
@@ -111,68 +121,75 @@ def create_app() -> FastAPI:
     VALID_MUNAY_CONTEXTS = {"diario_emocional", "coach_habitos", "reflexion_general"}
 
     @app.post("/audio")
-    async def audio(
-        file: UploadFile = File(...),
-        x_api_key: Optional[str] = Header(None, alias="X-API-Key"),
-        x_correlation_id: Optional[str] = Header(None, alias="X-Correlation-Id"),
-        x_munay_user_id: Optional[str] = Header(None, alias="x-munay-user-id"),
-        x_munay_context: Optional[str] = Header(None, alias="x-munay-context"),
+    async def audio_endpoint(
+        request: Request,
+        audio_file: UploadFile = File(..., description="Audio en formato soportado"),
+        locale: str = Form("es-CO"),
+        user_external_id: Optional[str] = Form(None),
     ):
         METRICS.inc_request("/audio")
-        corr_id = x_correlation_id or str(uuid4())
 
-        if file is None:
-            result = {"code": "bad_request", "message": "file required", "details": None}
-        else:
-            mime_type = file.content_type or ""
-            if not mime_type.startswith("audio/"):
-                result = {
-                    "code": "unsupported_media_type",
-                    "message": "unsupported media type",
-                    "details": {"mime_type": mime_type},
-                }
-            else:
-                raw_audio = await file.read()
-                if not raw_audio:
-                    result = {"code": "bad_request", "message": "empty audio", "details": None}
-                elif x_munay_context and x_munay_context not in VALID_MUNAY_CONTEXTS:
-                    result = {
-                        "code": "bad_request",
-                        "message": "invalid x-munay-context",
-                        "details": {"x-munay-context": x_munay_context},
-                    }
-                else:
-                    client_metadata: Dict[str, str] = {}
+        corr_id = request.headers.get("X-Correlation-Id") or str(uuid4())
+        api_key_id = request.headers.get("X-Api-Key-Id") or request.headers.get("X-API-Key")
+        munay_context = request.headers.get("x-munay-context")
 
-                    if x_munay_user_id:
-                        client_metadata["munay_user_id"] = x_munay_user_id
-                    if x_munay_context:
-                        client_metadata["munay_context"] = x_munay_context
+        if munay_context and munay_context not in VALID_MUNAY_CONTEXTS:
+            METRICS.inc_error("/audio")
+            response = JSONResponse(
+                {"detail": "invalid x-munay-context"}, status_code=400
+            )
+            _with_outcome(response, outcome="error", detail="audio.bad_request")
+            response.headers.setdefault("X-Correlation-Id", corr_id)
+            return response
 
-                    ctx: AudioRequestContext = {
-                        "corr_id": corr_id,
-                        "api_key_id": x_api_key or "",
-                        "raw_audio": raw_audio,
-                        "mime_type": mime_type,
-                        "language_hint": None,
-                        "client_metadata": client_metadata or None,
-                    }
-                    pipeline = StubAudioPipeline()
-                    result = pipeline.process(ctx)
+        audio_bytes = await audio_file.read()
+        if not audio_bytes:
+            METRICS.inc_error("/audio")
+            response = JSONResponse({"detail": "empty audio"}, status_code=400)
+            _with_outcome(response, outcome="error", detail="audio.bad_request")
+            response.headers.setdefault("X-Correlation-Id", corr_id)
+            return response
+
+        mime_type = audio_file.content_type or ""
+        client_meta: Dict[str, str] = {}
+
+        munay_user_id = request.headers.get("x-munay-user-id")
+        if munay_user_id:
+            client_meta["munay_user_id"] = munay_user_id
+        if munay_context:
+            client_meta["munay_context"] = munay_context
+
+        ctx: AudioRequestContext = {
+            "corr_id": corr_id,
+            "api_key_id": api_key_id or "",
+            "audio_bytes": audio_bytes,
+            "mime_type": mime_type,
+            "locale": locale,
+            "user_external_id": user_external_id,
+            "client_meta": client_meta or None,
+        }
+
+        result: AudioResponseContext | PipelineError = audio_pipeline.process(ctx)
 
         if "code" in result:
             status_code, detail_value = ERROR_STATUS_MAPPING.get(
                 result["code"], (500, "audio.internal_error")
             )
             METRICS.inc_error("/audio")
-            response = JSONResponse({"detail": result.get("message")}, status_code=status_code)
+            response = JSONResponse(
+                {"detail": result.get("message")}, status_code=status_code
+            )
             _with_outcome(response, outcome="error", detail=detail_value)
         else:
-            response_body = {
+            body = {
+                "session_id": result.get("session_id"),
+                "corr_id": result.get("corr_id") or corr_id,
                 "transcript": result["transcript"],
                 "reply_text": result["reply_text"],
-                "audio_url": result["tts_audio_url"],
+                "tts_url": result.get("tts_url"),
                 "usage": {
+                    "input_seconds": result["usage"]["input_seconds"],
+                    "output_seconds": result["usage"]["output_seconds"],
                     "stt_ms": result["usage"]["stt_ms"],
                     "llm_ms": result["usage"]["llm_ms"],
                     "tts_ms": result["usage"]["tts_ms"],
@@ -181,10 +198,10 @@ def create_app() -> FastAPI:
                     "provider_llm": result["usage"]["provider_llm"],
                     "provider_tts": result["usage"]["provider_tts"],
                 },
-                "session_id": result["session_id"],
+                "meta": result.get("meta"),
             }
-            response = JSONResponse(response_body)
-            _with_outcome(response, outcome="ok")
+            response = JSONResponse(body, status_code=200)
+            _with_outcome(response, outcome="success", detail="audio_processed")
 
         response.headers.setdefault("X-Correlation-Id", corr_id)
         return response

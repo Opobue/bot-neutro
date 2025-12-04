@@ -24,7 +24,7 @@ def test_rate_limit_disabled_does_not_block_audio_requests():
         for _ in range(3):
             response = client.post(
                 "/audio",
-                files={"file": ("test.wav", b"fake audio", "audio/wav")},
+                files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
                 headers={"X-API-Key": "rl-test"},
             )
             assert response.status_code != 429
@@ -51,14 +51,14 @@ def test_audio_rate_limit_blocks_after_threshold():
         for _ in range(2):
             response = client.post(
                 "/audio",
-                files={"file": ("test.wav", b"fake audio", "audio/wav")},
+                files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
                 headers={"X-API-Key": "rl-user-1"},
             )
             assert response.status_code != 429
 
         response = client.post(
             "/audio",
-            files={"file": ("test.wav", b"fake audio", "audio/wav")},
+            files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
             headers={"X-API-Key": "rl-user-1"},
         )
 

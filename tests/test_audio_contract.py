@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 
-from bot_neutro.api import create_app
-from bot_neutro.audio_storage_inmemory import DEFAULT_AUDIO_SESSION_REPOSITORY
+from bot_neutro.api import audio_session_repo, create_app
 
 
 client = TestClient(create_app())
@@ -10,7 +9,8 @@ client = TestClient(create_app())
 def test_audio_happy_path_returns_contract_fields_and_headers():
     response = client.post(
         "/audio",
-        files={"file": ("test.wav", b"fake audio", "audio/wav")},
+        files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
+        data={"locale": "es-CO", "user_external_id": "test-user"},
         headers={"X-API-Key": "test-key"},
     )
 
@@ -18,12 +18,16 @@ def test_audio_happy_path_returns_contract_fields_and_headers():
     payload = response.json()
     assert "transcript" in payload
     assert "reply_text" in payload
-    assert "audio_url" in payload
+    assert "tts_url" in payload
     assert "usage" in payload
     assert "session_id" in payload
+    assert payload.get("corr_id")
+    assert payload.get("meta") is None or isinstance(payload.get("meta"), dict)
 
     usage = payload["usage"]
     for key in [
+        "input_seconds",
+        "output_seconds",
         "stt_ms",
         "llm_ms",
         "tts_ms",
@@ -34,15 +38,15 @@ def test_audio_happy_path_returns_contract_fields_and_headers():
     ]:
         assert key in usage
 
-    assert response.headers.get("X-Outcome") == "ok"
+    assert response.headers.get("X-Outcome") == "success"
+    assert response.headers.get("X-Outcome-Detail") == "audio_processed"
     assert response.headers.get("X-Correlation-Id")
-    assert "X-Outcome-Detail" not in response.headers
 
 
 def test_audio_without_api_key_returns_unauthorized():
     response = client.post(
         "/audio",
-        files={"file": ("test.wav", b"fake audio", "audio/wav")},
+        files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
     )
 
     assert response.status_code == 401
@@ -55,7 +59,7 @@ def test_audio_without_api_key_returns_unauthorized():
 def test_audio_with_invalid_mime_type_returns_unsupported_media_type():
     response = client.post(
         "/audio",
-        files={"file": ("test.txt", b"text content", "text/plain")},
+        files={"audio_file": ("test.txt", b"text content", "text/plain")},
         headers={"X-API-Key": "test-key"},
     )
 
@@ -69,7 +73,7 @@ def test_audio_with_invalid_mime_type_returns_unsupported_media_type():
 def test_audio_with_empty_file_returns_bad_request():
     response = client.post(
         "/audio",
-        files={"file": ("test.wav", b"", "audio/wav")},
+        files={"audio_file": ("test.wav", b"", "audio/wav")},
         headers={"X-API-Key": "test-key"},
     )
 
@@ -81,13 +85,14 @@ def test_audio_with_empty_file_returns_bad_request():
 
 
 def test_audio_happy_path_creates_audio_session_in_repository():
-    repo = DEFAULT_AUDIO_SESSION_REPOSITORY
+    repo = audio_session_repo
     repo.clear()
 
     response = client.post(
         "/audio",
-        files={"file": ("test.wav", b"fake audio", "audio/wav")},
+        files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
         headers={"X-API-Key": "test-key", "X-Correlation-Id": "test-corr-id"},
+        data={"user_external_id": "test-user"},
     )
 
     assert response.status_code == 200
@@ -116,12 +121,12 @@ def test_audio_happy_path_creates_audio_session_in_repository():
 
 
 def test_audio_with_munay_headers_populates_user_and_context_in_session():
-    repo = DEFAULT_AUDIO_SESSION_REPOSITORY
+    repo = audio_session_repo
     repo.clear()
 
     response = client.post(
         "/audio",
-        files={"file": ("test.wav", b"fake audio", "audio/wav")},
+        files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
         headers={
             "X-API-Key": "test-key",
             "X-Correlation-Id": "corr-123",
@@ -149,7 +154,7 @@ def test_audio_with_munay_headers_populates_user_and_context_in_session():
 def test_audio_with_invalid_munay_context_returns_bad_request():
     response = client.post(
         "/audio",
-        files={"file": ("test.wav", b"fake audio", "audio/wav")},
+        files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
         headers={
             "X-API-Key": "test-key",
             "x-munay-user-id": "user-123",
