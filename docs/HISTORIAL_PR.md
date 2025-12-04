@@ -3,6 +3,15 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-04 – Estandarización de cobertura con pytest-cov
+
+- Se define `pytest --cov=src --cov-fail-under=80` como comando estándar de
+  cobertura para el proyecto, asegurando un umbral mínimo de 80% de cobertura.
+- Se añade `pytest-cov` a las dependencias de desarrollo (pyproject/requirements)
+  para que cualquier entorno pueda ejecutar el comando de cobertura sin errores.
+- Este cambio no modifica contratos ni código de runtime; formaliza la práctica
+  de calidad ya aplicada localmente (17 tests en verde y ~98% de cobertura).
+
 ## 2025-12-04 – Ajuste de semántica X-Outcome para /audio
 
 - Se actualiza `CONTRATO_NEUTRO_AUDIO_PIPELINE.md` para alinear la semántica de
