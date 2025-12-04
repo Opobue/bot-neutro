@@ -14,10 +14,13 @@
   - Verificar la existencia y encabezados de:
     - `docs/02_ESTADO_Y_NORTE.md`
     - `docs/HISTORIAL_PR.md`
-  - Fallar el CI cuando haya cambios en contratos (`docs/CONTRATO_*`, `docs/MUNAY_*`)
+  - Fallar el CI cuando haya cambios en:
+    - Contratos NEUTRO (`docs/CONTRATO_*`)
+    - Contratos MUNAY (`docs/MUNAY_*`)
+    - El propio NORTE (`docs/02_ESTADO_Y_NORTE.md`)
     que no estén acompañados por una actualización de `docs/HISTORIAL_PR.md`.
 - Este cambio consolida el NORTE como contrato de gobernanza y hace obligatorio
-  mantener el historial PR sincronizado con cualquier cambio de contrato.
+  mantener el historial PR sincronizado con cualquier cambio de contrato o del NORTE.
 
 ## 2025-12-02 – Rate limit en /audio + métricas dinámicas
 
