@@ -3,6 +3,18 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-04 – Ajuste de semántica X-Outcome para /audio
+
+- Se actualiza `CONTRATO_NEUTRO_AUDIO_PIPELINE.md` para alinear la semántica de
+  headers con la implementación actual del endpoint `/audio`:
+  - Respuestas exitosas usan `X-Outcome: success` y
+    `X-Outcome-Detail: audio_processed`.
+  - Las respuestas de error (`4xx`/`5xx`) mantienen `X-Outcome: error` y uno de
+    los códigos `audio.*` / `auth.*` definidos en la tabla de errores.
+- No se realizan cambios en código; este ajuste solo sincroniza la
+  documentación del contrato con el comportamiento ya cubierto por los tests
+  del endpoint `/audio`.
+
 ## 2025-12-04 – Alineación contrato AudioResponseContext con implementación
 
 - Se actualiza `CONTRATO_NEUTRO_AUDIO_PIPELINE.md` para que `AudioResponseContext`
