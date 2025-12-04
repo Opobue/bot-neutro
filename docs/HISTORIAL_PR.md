@@ -3,6 +3,19 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-04 – Alineación contrato AudioResponseContext con implementación
+
+- Se actualiza `CONTRATO_NEUTRO_AUDIO_PIPELINE.md` para que `AudioResponseContext`
+  use `tts_url` como campo canónico de URL TTS (en lugar de `audio_url` /
+  `tts_audio_url`) y documentar los campos actualmente devueltos por el stub:
+  `session_id`, `corr_id`, `tts_url`, `usage.input_seconds`, `usage.output_seconds`,
+  `meta`.
+- Se actualiza `MUNAY_CONTRATO_MODULO_AUDIO.md` para que el contrato del módulo
+  de audio en Munay consuma `tts_url` y conozca `session_id`, `corr_id` y
+  `meta.context`.
+- No se modifican firmas de código; este cambio sincroniza documentación con el
+  comportamiento ya implementado en el endpoint `/audio`.
+
 ## 2025-12-02 – Definición del NORTE MUNAY v2.1 + validación automática
 
 - Se crea `docs/02_ESTADO_Y_NORTE.md` como documento fuente del NORTE MUNAY v2.1:
