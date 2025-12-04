@@ -37,9 +37,9 @@ jobs:
             exit 1
           }
 
-      - name: Fail if contracts changed without HISTORIAL_PR update
+      - name: Fail if contracts or NORTE changed without HISTORIAL_PR update
         run: |
-          set -e
+          set -euo pipefail
 
           # Determinar base para el diff (PR o push directo a main)
           BASE_REF="${{ github.base_ref }}"
@@ -56,11 +56,11 @@ jobs:
           echo "Archivos cambiados:"
           echo "$CHANGED"
 
-          # Buscar cambios en contratos NEUTRO/MUNAY
-          NEED_HISTORY=$(echo "$CHANGED" | grep -E '^docs/(CONTRATO_|MUNAY_)' || true)
+          # Buscar cambios en contratos NEUTRO/MUNAY o en el NORTE
+          NEED_HISTORY=$(echo "$CHANGED" | grep -E '^docs/(CONTRATO_|MUNAY_|02_ESTADO_Y_NORTE\.md)' || true)
 
           if [ -n "$NEED_HISTORY" ]; then
-            echo "Se detectaron cambios en contratos:"
+            echo "Se detectaron cambios en contratos o en el NORTE:"
             echo "$NEED_HISTORY"
 
             echo "$CHANGED" | grep -q '^docs/HISTORIAL_PR.md$' || {
