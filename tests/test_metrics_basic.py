@@ -32,13 +32,13 @@ def test_dynamic_metrics_for_audio_requests():
 
     response_ok = client.post(
         "/audio",
-        files={"file": ("test.wav", b"RIFFDATA", "audio/wav")},
+        files={"audio_file": ("test.wav", b"RIFFDATA", "audio/wav")},
         headers={"X-API-Key": "dummy"},
     )
     assert response_ok.status_code == 200
 
     response_error = client.post(
-        "/audio", files={"file": ("test.wav", b"RIFFDATA", "audio/wav")}
+        "/audio", files={"audio_file": ("test.wav", b"RIFFDATA", "audio/wav")}
     )
     assert response_error.status_code == 401
 
