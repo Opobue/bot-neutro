@@ -17,7 +17,7 @@ jobs:
 
       - name: Ensure NORTE and HISTORIAL_PR exist and have correct headers
         run: |
-          set -e
+          set -euo pipefail
           if [ ! -f docs/02_ESTADO_Y_NORTE.md ]; then
             echo "ERROR: Falta docs/02_ESTADO_Y_NORTE.md"
             exit 1
@@ -28,7 +28,7 @@ jobs:
           fi
 
           head -n 1 docs/02_ESTADO_Y_NORTE.md | grep -q "NORTE MUNAY" || {
-            echo "ERROR: Encabezado de docs/02_ESTADO_Y_NORTE.md no coincide con NORTE MUNAY"
+            echo "ERROR: Encabezado de docs/02_ESTADO_Y_NORTE.md no contiene 'NORTE MUNAY'"
             exit 1
           }
 
@@ -64,10 +64,10 @@ jobs:
             echo "$NEED_HISTORY"
 
             echo "$CHANGED" | grep -q '^docs/HISTORIAL_PR.md$' || {
-              echo "ERROR: Se modificaron contratos pero no se actualizó docs/HISTORIAL_PR.md"
+              echo "ERROR: Se modificaron contratos o NORTE pero no se actualizó docs/HISTORIAL_PR.md"
               exit 1
             }
           else
-            echo "No hay cambios en contratos NEUTRO/MUNAY; no se exige actualización de HISTORIAL_PR."
+            echo "No hay cambios en contratos NEUTRO/MUNAY ni en el NORTE; no se exige actualización de HISTORIAL_PR."
           fi
 
