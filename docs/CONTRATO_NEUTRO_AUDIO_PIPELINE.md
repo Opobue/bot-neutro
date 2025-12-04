@@ -16,6 +16,8 @@ class AudioRequestContext(TypedDict):
     client_metadata: dict[str, str] | None
 
 class UsageMetrics(TypedDict):
+    input_seconds: float
+    output_seconds: float
     stt_ms: int
     llm_ms: int
     tts_ms: int
@@ -27,10 +29,11 @@ class UsageMetrics(TypedDict):
 class AudioResponseContext(TypedDict):
     transcript: str
     reply_text: str
-    tts_audio_bytes: bytes | None
-    tts_audio_url: str | None
+    tts_url: str | None
     usage: UsageMetrics
     session_id: str | None
+    corr_id: str | None
+    meta: dict[str, str] | None
 
 class PipelineError(TypedDict):
     code: str
@@ -63,3 +66,41 @@ class AudioPipeline(Protocol):
 ## Semántica de respuestas
 
 Las respuestas exitosas deben devolver `200 OK` con `X-Outcome: ok`. `X-Outcome-Detail` **no se incluye** en respuestas 2xx por defecto y se reserva para errores (4xx/5xx). En errores, `X-Outcome` debe ser `error` y `X-Outcome-Detail` debe contener uno de los códigos de la tabla anterior.
+
+### Ejemplo de respuesta exitosa
+
+```json
+{
+  "session_id": "uuid-de-la-sesion",
+  "corr_id": "corr-id-correlacion",
+  "transcript": "texto reconocido",
+  "reply_text": "respuesta generada",
+  "tts_url": "https://.../tts.wav",
+  "usage": {
+    "input_seconds": 1.0,
+    "output_seconds": 1.5,
+    "stt_ms": 123,
+    "llm_ms": 456,
+    "tts_ms": 200,
+    "total_ms": 779,
+    "provider_stt": "stub-stt",
+    "provider_llm": "stub-llm",
+    "provider_tts": "stub-tts"
+  },
+  "meta": {
+    "context": "diario_emocional"
+  }
+}
+```
+
+### Campos de `AudioResponseContext`
+
+- `transcript: str`: transcripción STT del audio de entrada.
+- `reply_text: str`: texto de respuesta generado por el LLM.
+- `tts_url: str | None`: URL pública donde el cliente puede obtener el audio TTS.
+- `usage: UsageMetrics`: métricas de uso incluyendo `input_seconds` (audio de entrada) y `output_seconds` (audio TTS), latencias en ms y proveedores de cada etapa.
+- `session_id: str | None`: identificador de sesión de audio en el storage neutro.
+- `corr_id: str | None`: correlación compartida con la capa HTTP.
+- `meta: dict[str, str] | None`: etiquetas de contexto (por ejemplo, `context: diario_emocional`).
+
+El contrato no garantiza entrega inline de bytes (`tts_audio_bytes`); el campo canónico para la reproducción del TTS es `tts_url`.
