@@ -7,12 +7,20 @@ Toda modificación debe pasar por una **ORDEN KAIZEN** (L1, L2 o L3).
 ## 2. Gobernanza del Proyecto
 El proyecto sigue un modelo **Contracts-First**, con la siguiente secuencia OBLIGATORIA:
 
-1. Actualizar los contratos en `/docs/`  
-2. Actualizar historial PR  
-3. Alinear ADRs si aplica  
+1. Actualizar los contratos en `/docs/`
+2. Actualizar historial PR
+3. Alinear ADRs si aplica
 4. recién después tocar código
 
 Los contratos NO se ignoran, NO se contradicen, NO se redefinen sin orden formal.
+
+### 2.1 Gobernanza SKB y ADRs
+- `docs/CONTRATO_SKB_GOBERNANZA.md` es contrato fuente para prompts y órdenes (D→D→C, bloqueos y reglas contracts-first).
+- `docs/CONTRATO_NEUTRO_CONTRIBUCION.md` es guía obligatoria para cualquier PR.
+- `docs/adr/` contiene los ADRs obligatorios para cambios de arquitectura, seguridad o SLO/SLA; toda decisión usa `ADR_TEMPLATE.md`.
+- Pipeline mínimo de CI (no negociable):
+  - `.github/workflows/validate_norte.yml`
+  - `.github/workflows/ci_tests.yml` (ejecuta `pytest -q` y `pytest --cov=src --cov-fail-under=80`).
 
 ---
 
