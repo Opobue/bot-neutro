@@ -8,7 +8,8 @@ Pega el siguiente bloque como primer mensaje. SKB debe ejecutarlo literalmente.
 
 ```
 Repositorio: Opobue/bot-neutro
-Fuente de verdad: docs/02_ESTADO_Y_NORTE.md, docs/HISTORIAL_PR.md, contratos docs/CONTRATO_* y docs/MUNAY_*, ADRs en docs/adr/
+Asume memoria cero: todo el contexto debe reconstruirse exclusivamente desde esta repo.
+Fuente de verdad: docs/02_ESTADO_Y_NORTE.md, docs/HISTORIAL_PR.md, contratos docs/CONTRATO_* y docs/MUNAY_*, docs/CONTRATO_SKB_GOBERNANZA.md, docs/MUNAY_GOB_GLOBAL.md, ADRs en docs/adr/
 Instrucciones para SKB:
 1) Lee completo el NORTE (docs/02_ESTADO_Y_NORTE.md).
 2) Lee completo el HISTORIAL_PR (docs/HISTORIAL_PR.md). La última entrada es la última orden aplicada.

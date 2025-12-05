@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-07 – Refinos bootstrap SKB y gobernanza global/local
+
+- `docs/BOOTSTRAP_SKB_HILO.md` ahora declara memoria cero explícita en el mensaje semilla e incluye los contratos de gobernanza (`CONTRATO_SKB_GOBERNANZA.md`, `MUNAY_GOB_GLOBAL.md`) en la fuente de verdad.
+- `docs/CONTRATO_SKB_GOBERNANZA.md` clarifica que los bloqueos `ci_rota_*` evalúan la rama `main` y referencia su alineación con `MUNAY_GOB_GLOBAL.md`.
+- `docs/MUNAY_GOB_GLOBAL.md` exige que cada repo Munay defina un contrato de gobernanza local (`*_GOB_LOCAL.md` o equivalente) derivado de los principios globales.
+
 ## 2025-12-06 – Bootstrap SKB, bloqueos y gobernanza global
 
 - Se crea `docs/BOOTSTRAP_SKB_HILO.md` como mensaje semilla y protocolo oficial para hilos nuevos con SKB.

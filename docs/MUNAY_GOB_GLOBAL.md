@@ -21,3 +21,4 @@ Establecer un germen de gobernanza global aplicable a todas las repos y servicio
 - Incluir lineamientos específicos para otras repos Munay (app móvil, dashboards, data pipelines) conforme se creen.
 - Definir criterios formales de cumplimiento Munay (checklist mínima, CI requerida, SLOs por dominio).
 - Documentar interoperabilidad entre repos (contratos compartidos, versiones, compatibilidad).
+- Toda repo Munay debe definir un archivo de gobernanza local (por ejemplo `MUNAY_GOB_LOCAL.md` o equivalente) que explicite cómo implementa los principios de este documento; en Bot Neutro este rol lo cumplen `docs/CONTRATO_SKB_GOBERNANZA.md` y `docs/02_ESTADO_Y_NORTE.md`.
