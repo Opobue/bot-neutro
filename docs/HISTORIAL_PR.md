@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-06 – Bootstrap SKB, bloqueos y gobernanza global
+
+- Se crea `docs/BOOTSTRAP_SKB_HILO.md` como mensaje semilla y protocolo oficial para hilos nuevos con SKB.
+- Se extiende `docs/CONTRATO_SKB_GOBERNANZA.md` con principios de memoria cero, protocolo de arranque y catálogo de bloqueos automáticos, incluyendo manejo de órdenes multi-tema.
+- Se crea `docs/MUNAY_GOB_GLOBAL.md` como contrato base de gobernanza global para futuras repos Munay.
+
 ## 2025-12-05 – Gobernanza SKB formal + CI de tests/cobertura
 
 - Se crea el workflow `.github/workflows/ci_tests.yml` que ejecuta `pytest -q` y `pytest --cov=src --cov-fail-under=80` en push/PR a `main`.
