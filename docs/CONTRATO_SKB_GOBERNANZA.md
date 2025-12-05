@@ -37,8 +37,8 @@ El siguiente catálogo de bloqueos es obligatorio. Cada bloqueo debe emitirse en
 - `repo_inaccesible`: no se puede leer el repositorio. Ejemplo: `BLOQUEO:repo_inaccesible·Evidencia:git/clone·Propuesta/Sig.paso:reintentar o proveer acceso`.
 - `norte_inexistente`: falta `docs/02_ESTADO_Y_NORTE.md`. Ejemplo: `BLOQUEO:norte_inexistente·Evidencia:docs/02_ESTADO_Y_NORTE.md·Propuesta/Sig.paso:crear/restaurar NORTE antes de continuar`.
 - `historial_inexistente`: falta `docs/HISTORIAL_PR.md`. Ejemplo: `BLOQUEO:historial_inexistente·Evidencia:docs/HISTORIAL_PR.md·Propuesta/Sig.paso:crear historial para registrar órdenes`.
-- `ci_rota_validate_norte`: el workflow `validate_norte.yml` falla de forma persistente en `main`. Ejemplo: `BLOQUEO:ci_rota_validate_norte·Evidencia:.github/workflows/validate_norte.yml·Propuesta/Sig.paso:reparar validaciones del NORTE antes de nuevos cambios`.
-- `ci_rota_tests`: el workflow `ci_tests.yml` falla de forma persistente en `main`. Ejemplo: `BLOQUEO:ci_rota_tests·Evidencia:.github/workflows/ci_tests.yml·Propuesta/Sig.paso:corregir tests/cobertura antes de seguir`.
+- `ci_rota_validate_norte`: el workflow `validate_norte.yml` falla de forma persistente en la rama `main`. Ejemplo: `BLOQUEO:ci_rota_validate_norte·Evidencia:.github/workflows/validate_norte.yml·Propuesta/Sig.paso:reparar validaciones del NORTE antes de nuevos cambios`.
+- `ci_rota_tests`: el workflow `ci_tests.yml` falla de forma persistente en la rama `main`. Ejemplo: `BLOQUEO:ci_rota_tests·Evidencia:.github/workflows/ci_tests.yml·Propuesta/Sig.paso:corregir tests/cobertura antes de seguir`.
 
 ## HISTORIAL_PR obligatorio
 - Cambios en `docs/CONTRATO_*`, `docs/MUNAY_*`, `docs/02_ESTADO_Y_NORTE.md` o `docs/adr/*` requieren una nueva entrada en `docs/HISTORIAL_PR.md`.
@@ -55,3 +55,6 @@ Todo cambio de código debe validar como mínimo:
 - Silenciar warnings o errores en CI o en código.
 - Mezclar temas en una misma orden o PR.
 - Cambiar contratos sin actualizar la documentación de ADRs y `docs/HISTORIAL_PR.md`.
+
+## Relación con MUNAY_GOB_GLOBAL
+Esta gobernanza SKB implementa localmente los principios globales definidos en `docs/MUNAY_GOB_GLOBAL.md`, adaptándolos a la operación de esta repo.
