@@ -3,6 +3,14 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-05 – Gobernanza SKB formal + CI de tests/cobertura
+
+- Se crea el workflow `.github/workflows/ci_tests.yml` que ejecuta `pytest -q` y `pytest --cov=src --cov-fail-under=80` en push/PR a `main`.
+- Se establece infraestructura de ADRs en `docs/adr/` con `ADR_TEMPLATE.md` como plantilla obligatoria.
+- Se agrega `docs/CONTRATO_SKB_GOBERNANZA.md` para formalizar D→D→C, bloqueos, contracts-first y reglas de pruebas/cobertura.
+- Se agrega `docs/CONTRATO_NEUTRO_CONTRIBUCION.md` como checklist previo a PR.
+- Se refuerza que el CI debe validar cobertura ≥80% para aprobar PRs y que la gobernanza SKB pasa a ser contrato formal del repositorio.
+
 ## 2025-12-04 – Estandarización de cobertura con pytest-cov
 
 - Se define `pytest --cov=src --cov-fail-under=80` como comando estándar de
