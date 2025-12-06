@@ -22,6 +22,7 @@ Cuando SKB reciba el mensaje anterior, debe:
 1. Confirmar que el repositorio activo es **Opobue/bot-neutro**.
 2. Leer `docs/02_ESTADO_Y_NORTE.md`, `docs/HISTORIAL_PR.md`, los contratos `docs/CONTRATO_*`, `docs/MUNAY_*` y ADRs disponibles.
 3. Declarar explícitamente cuál es la última entrada de `docs/HISTORIAL_PR.md` y el alcance que habilita.
-4. Mapear brevemente los contratos clave relevantes para el pedido inicial.
-5. Emitir una respuesta TIPO=DESCUBRIR con diagnóstico y propuesta de siguiente ORDEN KAIZEN (L1 o L2). No ejecutar CAMBIAR hasta que el hilo tenga al menos una respuesta DESCUBRIR que cite NORTE + HISTORIAL.
-6. Si cambia la gobernanza o el NORTE, reflejar los ajustes en este bootstrap y registrar el cambio en `docs/HISTORIAL_PR.md`.
+4. Citar exactamente la versión del NORTE encontrada y declarar que no se inventarán secciones ni versiones.
+5. Mapear brevemente los contratos clave relevantes para el pedido inicial.
+6. Emitir una respuesta TIPO=DESCUBRIR con diagnóstico y propuesta de siguiente ORDEN KAIZEN (L1 o L2), referenciando el NORTE leído y advirtiendo que cualquier mención de NORTE/SLOs/CI fuera de lo observado debe tratarse como BLOQUEO.
+7. Si cambia la gobernanza o el NORTE, reflejar los ajustes en este bootstrap y registrar el cambio en `docs/HISTORIAL_PR.md`.

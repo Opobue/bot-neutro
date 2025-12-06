@@ -31,6 +31,32 @@ BLOQUEO:{causa}·Evidencia:{arch:línea}·Propuesta/Sig.paso:{acción mínima}
 - Esa respuesta DESCUBRIR debe citar explícitamente el NORTE y el HISTORIAL, identificando cuál es la última entrada de `docs/HISTORIAL_PR.md` y el alcance que habilita.
 - Está prohibido saltar directamente a CAMBIAR en hilos nuevos o sin haber acreditado lectura del NORTE + HISTORIAL.
 
+### NORTE_version_no_inventada
+- Cada ORDEN KAIZEN debe incluir el campo:
+  - `NORTE_VERSION_ACTUAL = vX.Y` (copiado literalmente de la primera línea de `docs/02_ESTADO_Y_NORTE.md`).
+- Si el valor declarado no coincide con el valor real del archivo, la orden es inválida y debió emitirse un BLOQUEO.
+
+### CI_REAL vs CI_FUTURO
+- `CI_REAL`: workflows existentes en `.github/workflows/**`.
+- `CI_FUTURO`: checks deseados sin workflow implementado.
+- Ninguna orden puede usar checks de `CI_FUTURO` como criterio obligatorio de Definition of Done, salvo que incluya en su alcance la creación o modificación de esos workflows.
+
+### Niveles L1 / L2 / L3
+- **L1:** cambios puros de gobernanza/contratos (NORTE, HISTORIAL, contratos, ADRs, plantillas). No tocan código de runtime ni tests. Ejemplo: ajustar `CONTRATO_SKB_GOBERNANZA.md` o actualizar `docs/PLANTILLA_ORDEN_EJECUCION_KAIZEN.md`.
+- **L2:** cambios de funcionalidad que pueden tocar contratos y código, siempre sobre un único tema y actualizando el contrato habilitante en el mismo PR. Ejemplo: modificar `/audio` y actualizar el contrato correspondiente.
+- **L3:** refactors internos sin cambios de contratos externos ni comportamiento observable (estructura o deuda técnica). Ejemplo: reorganizar módulos internos manteniendo firmas públicas.
+
+### Referencia obligatoria al último DESCUBRIR
+- Toda orden L2/L3 debe referenciar explícitamente la última respuesta TIPO=DESCUBRIR del hilo (fecha/hora o identificador) y declarar que no existen cambios en NORTE/HISTORIAL posteriores a ese diagnóstico.
+- Si hay cambios en NORTE o HISTORIAL después del último DESCUBRIR, SKB debe emitir TIPO=BLOQUEO y solicitar un nuevo DESCUBRIR antes de aceptar la orden.
+
+### Catálogo de artefactos de IA prohibidos
+Las órdenes deben mantenerse libres de tokens de sistemas de IA ajenos. Patrones como los siguientes invalidan la orden y requieren corrección antes de un PR:
+- `contentReference[`.
+- `oaicite:`.
+- `<<ImageDisplayed>>`.
+- Cualquier otro token de sistema de IA que no sea parte explícita del diseño.
+
 ## Bloqueos automáticos
 El siguiente catálogo de bloqueos es obligatorio. Cada bloqueo debe emitirse en formato `BLOQUEO:{causa}·Evidencia:{arch:línea}·Propuesta/Sig.paso:{acción mínima}`.
 
