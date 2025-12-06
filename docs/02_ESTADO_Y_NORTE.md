@@ -32,6 +32,8 @@ Los contratos NO se ignoran, NO se contradicen, NO se redefinen sin orden formal
 | **uptime_target** | 99.9% |
 | **budget_burn_alert** | 85/90/95% |
 
+Ver `docs/NEUTRO_SLO_AUDIO_OPERACIONAL.md` para la definición operativa, queries y alertas de referencia del SLO de audio.
+
 Todas las implementaciones deben acercarse a estos límites incluso en pruebas.
 
 ---

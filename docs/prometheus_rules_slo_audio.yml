@@ -1,0 +1,115 @@
+# Plantilla de reglas de alerta para SLO de /audio
+# No se despliega automáticamente; usar como referencia en orden L3/ADR futuro.
+
+groups:
+  - name: audio-slo
+    rules:
+      - alert: SenseiAudioLatencySLOViolation
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(sensei_request_latency_seconds_bucket{route="/audio"}[5m])) by (le)
+          ) > 1.5
+        for: 10m
+        labels:
+          severity: page
+          slo: audio_latency_p95
+        annotations:
+          summary: "Latencia p95 de /audio supera 1500ms"
+          description: |
+            La latencia p95 de /audio excede 1.5s durante 10m. Revisar backpressure y dependencias.
+
+      - alert: SenseiAudioErrorRateSLOViolation
+        expr: |
+          (sum(rate(errors_total{route="/audio"}[5m]))
+            /
+           sum(rate(sensei_requests_total{route="/audio"}[5m]))) > 0.01
+        for: 10m
+        labels:
+          severity: page
+          slo: audio_error_rate
+        annotations:
+          summary: "Error rate de /audio supera 1%"
+          description: |
+            El ratio de errores de /audio es mayor a 1% por más de 10m.
+
+      - alert: SenseiAudioErrorBudgetBurn85
+        expr: |
+          (sum(rate(errors_total{route="/audio"}[5m]))
+            /
+           sum(rate(sensei_requests_total{route="/audio"}[5m]))) > 0.0085
+        for: 5m
+        labels:
+          severity: warn
+          slo: audio_error_budget
+        annotations:
+          summary: "Budget burn /audio >85%"
+          description: "Consumo del budget de errores de /audio supera 85% del 1% permitido."
+
+      - alert: SenseiAudioErrorBudgetBurn90
+        expr: |
+          (sum(rate(errors_total{route="/audio"}[5m]))
+            /
+           sum(rate(sensei_requests_total{route="/audio"}[5m]))) > 0.009
+        for: 5m
+        labels:
+          severity: warn
+          slo: audio_error_budget
+        annotations:
+          summary: "Budget burn /audio >90%"
+          description: "Consumo del budget de errores de /audio supera 90% del 1% permitido."
+
+      - alert: SenseiAudioErrorBudgetBurn95
+        expr: |
+          (sum(rate(errors_total{route="/audio"}[5m]))
+            /
+           sum(rate(sensei_requests_total{route="/audio"}[5m]))) > 0.0095
+        for: 5m
+        labels:
+          severity: page
+          slo: audio_error_budget
+        annotations:
+          summary: "Budget burn /audio >95%"
+          description: "Consumo del budget de errores de /audio supera 95% del 1% permitido."
+
+      - alert: SenseiAudioLatencyBudgetBurn85
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(sensei_request_latency_seconds_bucket{route="/audio"}[5m])) by (le)
+          ) > 1.275
+        for: 5m
+        labels:
+          severity: warn
+          slo: audio_latency_budget
+        annotations:
+          summary: "p95 /audio supera 85% del umbral"
+          description: "La latencia p95 de /audio supera 85% del límite de 1500ms."
+
+      - alert: SenseiAudioLatencyBudgetBurn90
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(sensei_request_latency_seconds_bucket{route="/audio"}[5m])) by (le)
+          ) > 1.35
+        for: 5m
+        labels:
+          severity: warn
+          slo: audio_latency_budget
+        annotations:
+          summary: "p95 /audio supera 90% del umbral"
+          description: "La latencia p95 de /audio supera 90% del límite de 1500ms."
+
+      - alert: SenseiAudioLatencyBudgetBurn95
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(sensei_request_latency_seconds_bucket{route="/audio"}[5m])) by (le)
+          ) > 1.425
+        for: 5m
+        labels:
+          severity: page
+          slo: audio_latency_budget
+        annotations:
+          summary: "p95 /audio supera 95% del umbral"
+          description: "La latencia p95 de /audio supera 95% del límite de 1500ms."

@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-10 – SLO audio operativos + queries y alertas (plantillas de referencia)
+
+- Se crea `docs/NEUTRO_SLO_AUDIO_OPERACIONAL.md` con la semántica operativa del SLO de audio, queries PromQL y uso de k6 como validación manual/local.
+- Se añaden reglas de alerta de referencia en `docs/prometheus_rules_slo_audio.yml` alineadas a p95 ≤1500 ms, error rate ≤1% y budget burn 85/90/95%.
+- Se incorpora el script de carga `tools/load/k6_audio_slo.js` (con `sample_silence.wav`) para estresar `/audio` manualmente sin integrarlo al CI actual.
+
 ## 2025-12-09 – Observabilidad y métricas de rate limit
 
 - `CONTRATO_NEUTRO_OBSERVABILIDAD.md` refuerza la lista de métricas núcleo, explicitando incrementos para `sensei_rate_limit_hits_total`, `mem_reads_total`, `mem_writes_total` y los contadores por ruta.
