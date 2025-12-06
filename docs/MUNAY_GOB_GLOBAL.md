@@ -12,6 +12,12 @@ Establecer un germen de gobernanza global aplicable a todas las repos y servicio
 - SLOs y observabilidad mínima declarados por producto y validados continuamente; la ausencia de señales es un bloqueo.
 - Seguridad y cumplimiento como primera clase: manejo de secretos, permisos y dependencias auditables.
 
+### Anti-alucinación y realidad del stack
+- Ninguna orden puede referenciar versiones, secciones o SLOs inexistentes en los contratos reales del repositorio.
+- Toda mención a CI debe anclarse a workflows existentes; los checks aspiracionales se documentan como futuros y no bloquean salvo que la orden cree dichos workflows.
+- Cada repo Munay debe contar con un mecanismo local (contrato o script) para detectar tokens de IA ajenos en `docs/` antes de merge.
+- Cada repo debe declarar qué archivos ejercen la función de gobernanza local (en Bot Neutro: `docs/CONTRATO_SKB_GOBERNANZA.md` y `docs/02_ESTADO_Y_NORTE.md`) y heredar explícitamente esta política anti-alucinación en su contrato local.
+
 ## Relación con esta repo (Bot Neutro)
 - Esta repo adhiere a `MUNAY_GOB_GLOBAL.md` como capa superior de principios.
 - La gobernanza local se especifica en `docs/CONTRATO_SKB_GOBERNANZA.md` y en `docs/02_ESTADO_Y_NORTE.md`, que concretan cómo aplicar estos principios en Bot Neutro.

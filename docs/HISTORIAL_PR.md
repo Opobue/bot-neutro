@@ -3,6 +3,14 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-08 – Blindaje de redacción de órdenes y bootstrap SKB
+
+- Se refuerza `CONTRATO_SKB_GOBERNANZA.md` con reglas NORTE_version_no_inventada, diferenciación CI_REAL/CI_FUTURO, definición explícita de L1/L2/L3, referencia obligatoria al último DESCUBRIR y catálogo de artefactos de IA prohibidos.
+- `MUNAY_GOB_GLOBAL.md` incorpora principios anti-alucinación y la obligación de declarar la gobernanza local que los hereda.
+- `CONTRATO_NEUTRO_CONTRIBUCION.md` añade checklist de realidad del NORTE, CI real y limpieza de tokens de IA.
+- Se crea `PLANTILLA_ORDEN_EJECUCION_KAIZEN.md` con campos NORTE_VERSION_ACTUAL, referencia a DESCUBRIR y separación CI_REAL/CI_FUTURO.
+- `BOOTSTRAP_SKB_HILO.md` ordena que la primera respuesta DESCUBRIR cite la versión real del NORTE y trate referencias inventadas a NORTE/SLOs/CI como BLOQUEO.
+
 ## 2025-12-07 – Refinos bootstrap SKB y gobernanza global/local
 
 - `docs/BOOTSTRAP_SKB_HILO.md` ahora declara memoria cero explícita en el mensaje semilla e incluye los contratos de gobernanza (`CONTRATO_SKB_GOBERNANZA.md`, `MUNAY_GOB_GLOBAL.md`) en la fuente de verdad.
