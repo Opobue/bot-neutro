@@ -10,10 +10,10 @@ Define la exposición de métricas y expectativas de SLO para el Bot Neutro. Las
 
 ## Métricas núcleo expuestas
 - **Histogram de latencia**: `sensei_request_latency_seconds_bucket` con etiquetas por ruta.
-- **Contadores de errores**: `errors_total` categorizado por tipo o ruta.
-- **Rate limit**: `sensei_rate_limit_hits_total` para registrar rechazos 429.
-- **Memoria y operaciones**: `mem_reads_total`, `mem_writes_total` y métricas afines.
-- **Requests por ruta**: `sensei_requests_total{route=...}` para volumen y perfil de tráfico.
+- **Contadores de errores**: `errors_total{route=...}` categorizado por ruta (incluye `/audio`), visibles aun cuando estén en `0` para rutas clave.
+- **Rate limit**: `sensei_rate_limit_hits_total` incrementa por cada respuesta 429 emitida por el middleware; se expone con valor `0` antes de observar eventos.
+- **Memoria y operaciones**: `mem_reads_total` y `mem_writes_total` cuentan lecturas/escrituras en el repositorio en memoria de sesiones de audio y se publican aun si están en `0`.
+- **Requests por ruta**: `sensei_requests_total{route=...}` para volumen y perfil de tráfico, incluyendo `/metrics`.
 
 ## SLOs orientativos
 - **Latencia audio p95**: `audio_p95_ms ≤ 1500 ms`.
@@ -24,6 +24,7 @@ Define la exposición de métricas y expectativas de SLO para el Bot Neutro. Las
 ## Relación con rate limit y eventos
 - Los rechazos por rate limit incrementan `sensei_rate_limit_hits_total` y deben emitirse como eventos de `rate_limit alcanzado`.
 - Los fallos de proveedores o validaciones se reflejan en `errors_total` y en logs JSON.
+- Las operaciones de almacenamiento de sesiones incrementan `mem_writes_total` al crear y `mem_reads_total` al listar.
 
 ## Compatibilidad con tests actuales
 - El `content-type` especificado coincide con las aserciones de la suite de métricas (`pytest -k metrics`).
