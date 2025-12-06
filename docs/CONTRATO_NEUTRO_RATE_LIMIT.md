@@ -10,7 +10,8 @@ Define la semántica de control de tráfico para el Bot Neutro, incluyendo rutas
 Estas rutas no están sujetas a rate limit para garantizar monitoreo y liveness.
 
 ## Configuración
-- Controlado por variables de entorno existentes (ejemplos): `RATE_LIMIT_ENABLED`, `RATE_LIMIT_PER_MIN`, `RATE_LIMIT_BURST`.
+- Controlado por variables de entorno actuales: `RATE_LIMIT_ENABLED`, `RATE_LIMIT_AUDIO_WINDOW_SECONDS`, `RATE_LIMIT_AUDIO_MAX_REQUESTS`.
+- Equivalencia con nomenclatura previa: `RATE_LIMIT_AUDIO_WINDOW_SECONDS` ≈ ventana en segundos usada por `RATE_LIMIT_PER_MIN` y `RATE_LIMIT_AUDIO_MAX_REQUESTS` ≈ burst máximo (`RATE_LIMIT_BURST`).
 - Cuando está habilitado, aplica a `/audio`, `/text`, `/actions` u otras rutas no allowlisted.
 
 ## Respuesta ante límite alcanzado
@@ -21,7 +22,7 @@ Estas rutas no están sujetas a rate limit para garantizar monitoreo y liveness.
 - **Body**: mensaje de error genérico, manteniendo la forma actual de la API.
 
 ## Observabilidad
-- Cada rechazo incrementa `sensei_rate_limit_hits_total` en `/metrics`.
+- Cada rechazo incrementa `sensei_rate_limit_hits_total` en `/metrics` y mantiene los headers `X-Outcome: error` y `X-Outcome-Detail: rate_limit`.
 - Los eventos de rate limit deben reflejarse en logs JSON estructurados.
 
 ## Compatibilidad con tests actuales

@@ -26,19 +26,14 @@ sensei_request_latency_seconds_count{route="/healthz"} 1
 sensei_request_latency_seconds_sum{route="/healthz"} 0.01
 # HELP sensei_rate_limit_hits_total Total requests rejected by rate limit
 # TYPE sensei_rate_limit_hits_total counter
-sensei_rate_limit_hits_total 0
 # HELP errors_total Total errors seen by route
 # TYPE errors_total counter
-errors_total{route="/audio"} 0
 # HELP mem_reads_total Memory reads
 # TYPE mem_reads_total counter
-mem_reads_total 0
 # HELP mem_writes_total Memory writes
 # TYPE mem_writes_total counter
-mem_writes_total 0
 # HELP sensei_requests_total Total requests by route
 # TYPE sensei_requests_total counter
-sensei_requests_total{route="/metrics"} 1
 """
 
 
@@ -91,6 +86,12 @@ def create_app() -> FastAPI:
         METRICS.inc_request("/metrics")
         snapshot = METRICS.snapshot()
         dynamic_lines = []
+
+        dynamic_lines.append(
+            f'sensei_rate_limit_hits_total {snapshot["rate_limit_hits_total"]}'
+        )
+        dynamic_lines.append(f'mem_reads_total {snapshot["mem_reads_total"]}')
+        dynamic_lines.append(f'mem_writes_total {snapshot["mem_writes_total"]}')
 
         for route, value in snapshot["requests_total"].items():
             dynamic_lines.append(f'sensei_requests_total{{route="{route}"}} {value}')

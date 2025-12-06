@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Dict, List, Optional, TypedDict
 
+from .metrics_runtime import METRICS
+
 
 class AudioSession(TypedDict):
     id: str
@@ -37,6 +39,7 @@ class InMemoryAudioSessionRepository:
         """Inserta la sesión; si ya existe `id`, puede sobrescribir o ignorar."""
 
         self._items.append(session)
+        METRICS.inc_mem_write()
         return session
 
     def list_by_user(
@@ -49,6 +52,7 @@ class InMemoryAudioSessionRepository:
 
         filtered = [item for item in self._items if item["user_external_id"] == user_external_id]
         sorted_items = sorted(filtered, key=lambda s: s["created_at"], reverse=True)
+        METRICS.inc_mem_read()
         return sorted_items[offset : offset + limit]
 
     def list_by_api_key(
@@ -61,6 +65,7 @@ class InMemoryAudioSessionRepository:
 
         filtered = [item for item in self._items if item["api_key_id"] == api_key_id]
         sorted_items = sorted(filtered, key=lambda s: s["created_at"], reverse=True)
+        METRICS.inc_mem_read()
         return sorted_items[offset : offset + limit]
 
 

@@ -7,6 +7,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
+from bot_neutro.metrics_runtime import METRICS
+
 ALLOWLIST: Iterable[str] = {"/metrics", "/healthz", "/readyz", "/version"}
 
 
@@ -58,6 +60,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 if correlation_id:
                     response.headers["X-Correlation-Id"] = correlation_id
                 response.headers["Retry-After"] = str(retry_after)
+                METRICS.inc_rate_limit_hit()
                 return response
 
             entry["count"] += 1

@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-09 – Observabilidad y métricas de rate limit
+
+- `CONTRATO_NEUTRO_OBSERVABILIDAD.md` refuerza la lista de métricas núcleo, explicitando incrementos para `sensei_rate_limit_hits_total`, `mem_reads_total`, `mem_writes_total` y los contadores por ruta.
+- `CONTRATO_NEUTRO_RATE_LIMIT.md` aclara que cada 429 mantiene los headers `X-Outcome`/`X-Outcome-Detail` y aumenta `sensei_rate_limit_hits_total`.
+- `metrics_runtime.py`, `rate_limit.py`, `audio_storage_inmemory.py` y `/metrics` instrumentan los nuevos contadores; las pruebas cubren rechazos 429 y operaciones de memoria conforme al diagnóstico DESCUBRIR.
+
 ## 2025-12-08 – Blindaje de redacción de órdenes y bootstrap SKB
 
 - Se refuerza `CONTRATO_SKB_GOBERNANZA.md` con reglas NORTE_version_no_inventada, diferenciación CI_REAL/CI_FUTURO, definición explícita de L1/L2/L3, referencia obligatoria al último DESCUBRIR y catálogo de artefactos de IA prohibidos.
@@ -79,7 +85,7 @@
   - Fallar el CI cuando haya cambios en:
     - Contratos NEUTRO (`docs/CONTRATO_*`)
     - Contratos MUNAY (`docs/MUNAY_*`)
-    - El propio NORTE (`docs/02_ESTADO_Y_NORTE.md`)
+    - El propio NORTE (`docs/02_ESTADO_Y_NORTE.md`),
     que no estén acompañados por una actualización de `docs/HISTORIAL_PR.md`.
 - Este cambio consolida el NORTE como contrato de gobernanza y hace obligatorio
   mantener el historial PR sincronizado con cualquier cambio de contrato o del NORTE.
@@ -92,7 +98,7 @@
   - `RATE_LIMIT_AUDIO_MAX_REQUESTS`
 - Solo se limita `/audio`; rutas `/healthz`, `/readyz`, `/version` y `/metrics` quedan en allowlist.
 - Las respuestas 429 devuelven:
-  - `{"detail": "rate limit exceeded"}`
+  - `{ "detail": "rate limit exceeded" }`
   - Headers: `X-Outcome: error`, `X-Outcome-Detail: rate_limit`, `Retry-After`.
 - Se añade `InMemoryMetrics` (`metrics_runtime.py`) para registrar:
   - `sensei_requests_total{route="…"}`
@@ -150,4 +156,3 @@
   - Se integran con las métricas dinámicas a través de `METRICS.inc_request(route)`.
 - Se mantiene el payload estático de `/metrics` para compatibilidad con tests previos,
   añadiendo solo líneas dinámicas para contadores por ruta.
-
