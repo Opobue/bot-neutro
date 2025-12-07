@@ -3,6 +3,17 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-11 – Histograma de latencia para /audio y stub httpx de pruebas
+
+- Se añade `RequestLatencyMiddleware` para medir la duración de cada petición y alimentar el
+  histograma de latencia en `InMemoryMetrics.observe_latency`, por ruta.
+- `/metrics` ahora exporta buckets `sensei_request_latency_seconds_bucket`, `count` y `sum`
+  por ruta, incluyendo `/audio`, alineado con `docs/NEUTRO_SLO_AUDIO_OPERACIONAL.md`.
+- Se agrega cobertura de regresión para el histograma de `/audio` en `tests/test_metrics_basic.py`
+  verificando la exposición de buckets y agregados en `/metrics`.
+- Se incorpora un stub mínimo de `httpx` embebido en el repo, usado únicamente por los tests
+  (no se introduce dependencia de `httpx` externo en el runtime).
+
 ## 2025-12-10 – SLO audio operativos + queries y alertas (plantillas de referencia)
 
 - Se crea `docs/NEUTRO_SLO_AUDIO_OPERACIONAL.md` con la semántica operativa del SLO de audio, queries PromQL y uso de k6 como validación manual/local.
