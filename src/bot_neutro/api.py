@@ -5,13 +5,8 @@ from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from . import __version__
-from .audio_pipeline_stub import (
-    AudioRequestContext,
-    AudioResponseContext,
-    PipelineError,
-    StubAudioPipeline,
-)
 from .audio_storage_inmemory import InMemoryAudioSessionRepository
+from .audio_pipeline import AudioPipeline, AudioRequestContext, AudioResponseContext, PipelineError
 from .middleware import (
     CorrelationIdMiddleware,
     JSONLoggingMiddleware,
@@ -19,6 +14,7 @@ from .middleware import (
     RequestLatencyMiddleware,
 )
 from .metrics_runtime import METRICS
+from .providers.factory import build_llm_provider, build_stt_provider, build_tts_provider
 
 
 METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
@@ -43,7 +39,12 @@ def _with_outcome(response, outcome: str = "ok", detail: str | None = None) -> N
 
 
 audio_session_repo = InMemoryAudioSessionRepository()
-audio_pipeline = StubAudioPipeline(audio_session_repo)
+audio_pipeline = AudioPipeline(
+    session_repo=audio_session_repo,
+    stt_provider=build_stt_provider(),
+    tts_provider=build_tts_provider(),
+    llm_provider=build_llm_provider(),
+)
 
 
 def create_app() -> FastAPI:
