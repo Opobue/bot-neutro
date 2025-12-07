@@ -1,5 +1,5 @@
 from threading import Lock
-from typing import Dict
+from typing import Dict, List
 
 
 class InMemoryMetrics:
@@ -10,6 +10,19 @@ class InMemoryMetrics:
         self._rate_limit_hits_total: int = 0
         self._mem_reads_total: int = 0
         self._mem_writes_total: int = 0
+
+        self._latency_bucket_bounds: List[float] = [0.1, 0.5, 1.0, float("inf")]
+        self._latency_buckets: Dict[str, Dict[float, int]] = {}
+        self._latency_count: Dict[str, int] = {}
+        self._latency_sum: Dict[str, float] = {}
+        self._ensure_latency_route("/healthz")
+        self._ensure_latency_route("/audio")
+
+    def _ensure_latency_route(self, route: str) -> None:
+        if route not in self._latency_buckets:
+            self._latency_buckets[route] = {bound: 0 for bound in self._latency_bucket_bounds}
+            self._latency_count[route] = 0
+            self._latency_sum[route] = 0.0
 
     def inc_request(self, route: str) -> None:
         with self._lock:
@@ -31,6 +44,16 @@ class InMemoryMetrics:
         with self._lock:
             self._mem_writes_total += 1
 
+    def observe_latency(self, route: str, duration_seconds: float) -> None:
+        with self._lock:
+            self._ensure_latency_route(route)
+            self._latency_count[route] += 1
+            self._latency_sum[route] += duration_seconds
+
+            for bound in self._latency_bucket_bounds:
+                if duration_seconds <= bound:
+                    self._latency_buckets[route][bound] += 1
+
     def snapshot(self) -> Dict[str, Dict[str, int]]:
         with self._lock:
             requests_total = dict(self._requests_total)
@@ -38,12 +61,22 @@ class InMemoryMetrics:
             for route in ("/audio", "/metrics"):
                 errors_total.setdefault(route, 0)
 
+            latency_snapshot: Dict[str, Dict[str, Dict[float, int] | float | int]] = {}
+            for route, buckets in self._latency_buckets.items():
+                latency_snapshot[route] = {
+                    "buckets": dict(buckets),
+                    "count": self._latency_count.get(route, 0),
+                    "sum": self._latency_sum.get(route, 0.0),
+                }
+
             return {
                 "requests_total": requests_total,
                 "errors_total": errors_total,
                 "rate_limit_hits_total": self._rate_limit_hits_total,
                 "mem_reads_total": self._mem_reads_total,
                 "mem_writes_total": self._mem_writes_total,
+                "latency": latency_snapshot,
+                "latency_bucket_bounds": list(self._latency_bucket_bounds),
             }
 
 

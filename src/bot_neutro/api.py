@@ -1,7 +1,7 @@
 from uuid import uuid4
 from typing import Dict, Optional
 
-from fastapi import FastAPI, File, Form, Header, Request, UploadFile
+from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from . import __version__
@@ -12,18 +12,17 @@ from .audio_pipeline_stub import (
     StubAudioPipeline,
 )
 from .audio_storage_inmemory import InMemoryAudioSessionRepository
-from .middleware import CorrelationIdMiddleware, JSONLoggingMiddleware, RateLimitMiddleware
+from .middleware import (
+    CorrelationIdMiddleware,
+    JSONLoggingMiddleware,
+    RateLimitMiddleware,
+    RequestLatencyMiddleware,
+)
 from .metrics_runtime import METRICS
 
 
 METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
 # TYPE sensei_request_latency_seconds histogram
-sensei_request_latency_seconds_bucket{route="/healthz",le="0.1"} 0
-sensei_request_latency_seconds_bucket{route="/healthz",le="0.5"} 0
-sensei_request_latency_seconds_bucket{route="/healthz",le="1.0"} 0
-sensei_request_latency_seconds_bucket{route="/healthz",le="+Inf"} 1
-sensei_request_latency_seconds_count{route="/healthz"} 1
-sensei_request_latency_seconds_sum{route="/healthz"} 0.01
 # HELP sensei_rate_limit_hits_total Total requests rejected by rate limit
 # TYPE sensei_rate_limit_hits_total counter
 # HELP errors_total Total errors seen by route
@@ -50,6 +49,7 @@ audio_pipeline = StubAudioPipeline(audio_session_repo)
 def create_app() -> FastAPI:
     app = FastAPI(title="bot-neutro", version=__version__)
 
+    app.add_middleware(RequestLatencyMiddleware)
     app.add_middleware(CorrelationIdMiddleware)
     app.add_middleware(RateLimitMiddleware)
     app.add_middleware(JSONLoggingMiddleware)
@@ -87,6 +87,20 @@ def create_app() -> FastAPI:
         snapshot = METRICS.snapshot()
         dynamic_lines = []
 
+        for route, latency in snapshot["latency"].items():
+            for bound in snapshot["latency_bucket_bounds"]:
+                bound_label = "+Inf" if bound == float("inf") else str(bound)
+                value = latency["buckets"].get(bound, 0)
+                dynamic_lines.append(
+                    f'sensei_request_latency_seconds_bucket{{route="{route}",le="{bound_label}"}} {value}'
+                )
+            dynamic_lines.append(
+                f'sensei_request_latency_seconds_count{{route="{route}"}} {latency["count"]}'
+            )
+            dynamic_lines.append(
+                f'sensei_request_latency_seconds_sum{{route="{route}"}} {latency["sum"]}'
+            )
+
         dynamic_lines.append(
             f'sensei_rate_limit_hits_total {snapshot["rate_limit_hits_total"]}'
         )
@@ -99,7 +113,7 @@ def create_app() -> FastAPI:
         for route, value in snapshot["errors_total"].items():
             dynamic_lines.append(f'errors_total{{route="{route}"}} {value}')
 
-        payload = METRICS_PAYLOAD + "\n" + "\n".join(dynamic_lines) if dynamic_lines else METRICS_PAYLOAD
+        payload = METRICS_PAYLOAD + "\n".join(dynamic_lines)
         response = PlainTextResponse(
             payload,
             media_type="text/plain; version=0.0.4; charset=utf-8",

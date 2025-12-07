@@ -54,3 +54,30 @@ def test_dynamic_metrics_for_audio_requests():
         in body
     )
     assert f'errors_total{{route="/audio"}} {expected_errors}' in body
+
+
+def test_audio_latency_histogram_exposed_and_counts_increment():
+    snapshot_before = METRICS.snapshot()
+    latency_before = snapshot_before["latency"].get("/audio", {}).get("count", 0)
+
+    response = client.post(
+        "/audio",
+        files={"audio_file": ("test.wav", b"RIFFDATA", "audio/wav")},
+        headers={"X-API-Key": "latency-test"},
+    )
+    assert response.status_code == 200
+
+    snapshot_after = METRICS.snapshot()
+    latency_after = snapshot_after["latency"].get("/audio", {}).get("count", 0)
+    assert latency_after >= latency_before + 1
+    assert snapshot_after["latency"].get("/audio", {}).get("sum", 0) > 0
+
+    metrics_response = client.get("/metrics")
+    body = metrics_response.text
+
+    assert 'sensei_request_latency_seconds_bucket{route="/audio",le="0.1"}' in body
+    assert 'sensei_request_latency_seconds_bucket{route="/audio",le="0.5"}' in body
+    assert 'sensei_request_latency_seconds_bucket{route="/audio",le="1.0"}' in body
+    assert 'sensei_request_latency_seconds_bucket{route="/audio",le="+Inf"}' in body
+    assert 'sensei_request_latency_seconds_count{route="/audio"}' in body
+    assert 'sensei_request_latency_seconds_sum{route="/audio"}' in body
