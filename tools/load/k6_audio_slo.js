@@ -39,7 +39,10 @@ export default function () {
 
   const res = http.post(
     `${BASE_URL}/audio`,
-    { file: audioFile },
+    {
+      // FastAPI espera el campo "audio_file" (UploadFile)
+      audio_file: audioFile,
+    },
     {
       headers: {
         'X-API-Key': API_KEY,
