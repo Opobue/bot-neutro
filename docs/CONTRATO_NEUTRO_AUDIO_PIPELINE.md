@@ -4,6 +4,75 @@
 
 La interfaz `/audio` del Bot Neutro conecta el pipeline de procesamiento de audio (STT → LLM → TTS) con los consumidores externos. Este contrato detalla los tipos lógicos, la interfaz esperada y el mapeo de errores a respuestas HTTP.
 
+### Providers enchufables (STT/TTS/LLM)
+
+El pipeline es multi-provider. Se definen interfaces mínimas para cada etapa y se seleccionan implementaciones mediante variables de entorno. El modo por defecto es el **stub** (sin dependencia externa) para asegurar backwards compatibility y costo cero.
+
+```python
+from dataclasses import dataclass
+from typing import Optional
+
+
+@dataclass
+class STTResult:
+    text: str
+    raw_transcript: Optional[dict] = None
+
+
+@dataclass
+class TTSResult:
+    audio_bytes: bytes
+    audio_mime_type: str  # ej. "audio/wav"
+    provider_id: str      # "azure", "stub", etc.
+    audio_url: Optional[str] = None
+
+
+class STTProvider:
+    def transcribe(self, audio_bytes: bytes, locale: str) -> STTResult:
+        raise NotImplementedError
+
+
+class TTSProvider:
+    def synthesize(self, text: str, locale: str, voice: Optional[str] = None) -> TTSResult:
+        raise NotImplementedError
+
+
+class LLMProvider:
+    def generate_reply(self, transcript: str, context: dict) -> str:
+        raise NotImplementedError
+```
+
+Interfaces y provider factory:
+
+- `AUDIO_STT_PROVIDER` ∈ {`stub`, `azure`} (default: `stub`).
+- `AUDIO_TTS_PROVIDER` ∈ {`stub`, `azure`} (default: `stub`).
+- `AUDIO_LLM_PROVIDER` ∈ {`stub`} (por ahora solo stub).
+
+Selección por entorno (fallback a stub cuando no se declara):
+
+```python
+from bot_neutro.providers.factory import (
+    build_llm_provider,
+    build_stt_provider,
+    build_tts_provider,
+)
+
+stt_provider = build_stt_provider()  # stub si no hay ENV
+tts_provider = build_tts_provider()  # stub si no hay ENV
+llm_provider = build_llm_provider()  # stub
+```
+
+### Variables de entorno Azure Speech (skeleton)
+
+Los providers `azure` leen configuración únicamente desde ENV y fallan explícitamente si faltan credenciales críticas:
+
+- `AZURE_SPEECH_KEY`
+- `AZURE_SPEECH_REGION`
+- `AZURE_SPEECH_STT_LANGUAGE_DEFAULT` (ej. `es-ES`)
+- `AZURE_SPEECH_TTS_VOICE_DEFAULT` (ej. `es-ES-AlonsoNeural`)
+
+Si se elige `AUDIO_STT_PROVIDER=azure` o `AUDIO_TTS_PROVIDER=azure` sin `AZURE_SPEECH_KEY`/`AZURE_SPEECH_REGION`, la app debe levantar un error de configuración al iniciar (fail-fast). En futuras iteraciones se conectará el SDK oficial; en esta versión el provider Azure es un esqueleto sin llamadas reales.
+
 ## Tipos lógicos
 
 ```python
@@ -47,6 +116,11 @@ class PipelineError(TypedDict):
 class AudioPipeline(Protocol):
     def process(self, ctx: AudioRequestContext) -> AudioResponseContext | PipelineError:
         ...
+
+# Implementación actual
+- El orquestador `AudioPipeline` se instancia con providers enchufables (STT/TTS/LLM) seleccionados por ENV.
+- El modo por defecto usa `StubSTTProvider`/`StubLLMProvider`/`StubTTSProvider`, preservando el comportamiento previo.
+- `AzureSTTProvider` y `AzureTTSProvider` existen como esqueleto activable por ENV (sin llamadas reales todavía).
 ```
 
 ## Mapeo de errores a HTTP

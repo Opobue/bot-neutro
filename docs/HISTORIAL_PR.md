@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-12 – Pipeline de audio enchufable (stub + Azure skeleton)
+
+- Se introduce un orquestador `AudioPipeline` con providers enchufables (STT/TTS/LLM) y selección por variables de entorno (`AUDIO_STT_PROVIDER`, `AUDIO_TTS_PROVIDER`).
+- El modo por defecto sigue siendo el stub actual, preservando contratos y tests de `/audio`.
+- Se agregan interfaces y factories de providers en `src/bot_neutro/providers/` y un skeleton de `AzureSTTProvider`/`AzureTTSProvider`, activables por ENV para futura integración real con Azure Speech.
+
 ## 2025-12-11 – Histograma de latencia para /audio y stub httpx de pruebas
 
 - Se añade `RequestLatencyMiddleware` para medir la duración de cada petición y alimentar el
