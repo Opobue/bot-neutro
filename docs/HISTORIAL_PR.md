@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-13 – Azure Speech real (opt-in) con fallback a stub
+
+- Se activan las implementaciones reales de `AzureSTTProvider` y `AzureTTSProvider` con import perezoso del SDK de Azure Speech.
+- La fábrica falla temprano si faltan credenciales o la librería, manteniendo el modo stub por defecto.
+- Ante errores de Azure se degrada automáticamente al stub por petición, reflejando `provider_*` como `azure-*|stub-*`.
+- Se documenta la semántica de fallback y se añaden pruebas unitarias para fábricas y pipeline de audio.
+
 ## 2025-12-12 – Pipeline de audio enchufable (stub + Azure skeleton)
 
 - Se introduce un orquestador `AudioPipeline` con providers enchufables (STT/TTS/LLM) y selección por variables de entorno (`AUDIO_STT_PROVIDER`, `AUDIO_TTS_PROVIDER`).

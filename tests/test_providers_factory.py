@@ -1,8 +1,24 @@
+import sys
+import types
+
 import pytest
 
 from bot_neutro.providers import factory
 from bot_neutro.providers.azure import AzureSTTProvider, AzureTTSProvider
 from bot_neutro.providers.stub import StubLLMProvider, StubSTTProvider, StubTTSProvider
+
+
+def _fake_speech_sdk(monkeypatch):
+    azure = types.ModuleType("azure")
+    cognitiveservices = types.ModuleType("azure.cognitiveservices")
+    speech = types.ModuleType("azure.cognitiveservices.speech")
+
+    monkeypatch.setattr(azure, "cognitiveservices", cognitiveservices, raising=False)
+    monkeypatch.setattr(cognitiveservices, "speech", speech, raising=False)
+
+    monkeypatch.setitem(sys.modules, "azure", azure)
+    monkeypatch.setitem(sys.modules, "azure.cognitiveservices", cognitiveservices)
+    monkeypatch.setitem(sys.modules, "azure.cognitiveservices.speech", speech)
 
 
 def test_build_stt_provider_defaults_to_stub(monkeypatch):
@@ -37,6 +53,7 @@ def test_build_tts_provider_returns_azure_when_configured(monkeypatch):
     monkeypatch.setenv("AZURE_SPEECH_REGION", "eastus")
     monkeypatch.setenv("AZURE_SPEECH_STT_LANGUAGE_DEFAULT", "es-ES")
     monkeypatch.setenv("AZURE_SPEECH_TTS_VOICE_DEFAULT", "es-ES-AlonsoNeural")
+    _fake_speech_sdk(monkeypatch)
 
     provider = factory.build_tts_provider()
     assert isinstance(provider, AzureTTSProvider)
@@ -46,6 +63,22 @@ def test_build_stt_provider_returns_azure_when_configured(monkeypatch):
     monkeypatch.setenv("AUDIO_STT_PROVIDER", "azure")
     monkeypatch.setenv("AZURE_SPEECH_KEY", "dummy-key")
     monkeypatch.setenv("AZURE_SPEECH_REGION", "eastus")
+    _fake_speech_sdk(monkeypatch)
 
     provider = factory.build_stt_provider()
     assert isinstance(provider, AzureSTTProvider)
+
+
+def test_build_tts_provider_missing_dependency(monkeypatch):
+    monkeypatch.setenv("AUDIO_TTS_PROVIDER", "azure")
+    monkeypatch.setenv("AZURE_SPEECH_KEY", "dummy-key")
+    monkeypatch.setenv("AZURE_SPEECH_REGION", "eastus")
+
+    monkeypatch.delenv("AZURE_SPEECH_STT_LANGUAGE_DEFAULT", raising=False)
+    monkeypatch.delenv("AZURE_SPEECH_TTS_VOICE_DEFAULT", raising=False)
+    monkeypatch.delitem(sys.modules, "azure", raising=False)
+    monkeypatch.delitem(sys.modules, "azure.cognitiveservices", raising=False)
+    monkeypatch.delitem(sys.modules, "azure.cognitiveservices.speech", raising=False)
+
+    with pytest.raises(ValueError):
+        factory.build_tts_provider()

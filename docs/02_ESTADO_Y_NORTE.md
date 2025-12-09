@@ -88,10 +88,11 @@ Cada nuevo hilo debe comenzar con este mensaje:
 
 ## 8. Estado Actual del Sistema (última actualización)
 - Pipeline de audio completo con almacenamiento en memoria
-- Pipeline de audio con providers enchufables (stub por defecto, esqueleto Azure seleccionable por ENV)
+- Pipeline de audio con providers enchufables (stub por defecto, Azure seleccionable por ENV)
+- Azure Speech STT/TTS real disponible como opt-in local, con fallback automático a stub ante fallos
 - Headers Munay (`x-munay-user-id`, `x-munay-context`) integrados
 - Métricas runtime (`METRICS`) activas
-- Rate-limit funcional por API key  
+- Rate-limit funcional por API key
 - 100% de pruebas unitarias verdes  
 - PRs recientes documentados en `HISTORIAL_PR.md`  
 
