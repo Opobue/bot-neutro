@@ -5,6 +5,7 @@ from typing import Optional
 @dataclass
 class STTResult:
     text: str
+    provider_id: str
     raw_transcript: Optional[dict] = None
 
 

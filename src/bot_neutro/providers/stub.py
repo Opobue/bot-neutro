@@ -7,7 +7,7 @@ class StubSTTProvider(STTProvider):
     input_seconds = 1.0
 
     def transcribe(self, audio_bytes: bytes, locale: str) -> STTResult:  # pragma: no cover - simple stub
-        return STTResult(text="stub transcript", raw_transcript={"locale": locale})
+        return STTResult(text="stub transcript", provider_id=self.provider_id, raw_transcript={"locale": locale})
 
 
 class StubLLMProvider(LLMProvider):

@@ -16,6 +16,7 @@ from typing import Optional
 @dataclass
 class STTResult:
     text: str
+    provider_id: str
     raw_transcript: Optional[dict] = None
 
 
@@ -62,16 +63,18 @@ tts_provider = build_tts_provider()  # stub si no hay ENV
 llm_provider = build_llm_provider()  # stub
 ```
 
-### Variables de entorno Azure Speech (skeleton)
+### Variables de entorno Azure Speech (runtime real con fallback)
 
-Los providers `azure` leen configuración únicamente desde ENV y fallan explícitamente si faltan credenciales críticas:
+Los providers `azure` leen configuración únicamente desde ENV y fallan explícitamente si faltan credenciales críticas. Las llamadas
+reales al SDK de Azure se ejecutan de manera perezosa y, ante errores de red/timeout/5xx, hacen **fallback transparente al stub**
+cuando este existe:
 
 - `AZURE_SPEECH_KEY`
 - `AZURE_SPEECH_REGION`
 - `AZURE_SPEECH_STT_LANGUAGE_DEFAULT` (ej. `es-ES`)
 - `AZURE_SPEECH_TTS_VOICE_DEFAULT` (ej. `es-ES-AlonsoNeural`)
 
-Si se elige `AUDIO_STT_PROVIDER=azure` o `AUDIO_TTS_PROVIDER=azure` sin `AZURE_SPEECH_KEY`/`AZURE_SPEECH_REGION`, la app debe levantar un error de configuración al iniciar (fail-fast). En futuras iteraciones se conectará el SDK oficial; en esta versión el provider Azure es un esqueleto sin llamadas reales.
+Si se elige `AUDIO_STT_PROVIDER=azure` o `AUDIO_TTS_PROVIDER=azure` sin `AZURE_SPEECH_KEY`/`AZURE_SPEECH_REGION`, la app debe levantar un error de configuración al iniciar (fail-fast). Cuando Azure está activo y falla en tiempo de ejecución, el provider degrade al stub y la métrica `provider_*` reflejará el fallback (`azure-stt|stub-stt`, `azure-tts|stub-tts`). El modo por defecto sigue siendo 100% stub y es el único ejercitado en CI.
 
 ## Tipos lógicos
 
@@ -110,6 +113,8 @@ class PipelineError(TypedDict):
     details: dict[str, str] | None
 ```
 
+`provider_stt` y `provider_tts` provienen del resultado de cada etapa y pueden incluir fallback explícito (por ejemplo `azure-stt|stub-stt`).
+
 ## Interfaz
 
 ```python
@@ -120,7 +125,7 @@ class AudioPipeline(Protocol):
 # Implementación actual
 - El orquestador `AudioPipeline` se instancia con providers enchufables (STT/TTS/LLM) seleccionados por ENV.
 - El modo por defecto usa `StubSTTProvider`/`StubLLMProvider`/`StubTTSProvider`, preservando el comportamiento previo.
-- `AzureSTTProvider` y `AzureTTSProvider` existen como esqueleto activable por ENV (sin llamadas reales todavía).
+- `AzureSTTProvider` y `AzureTTSProvider` ejecutan llamadas reales al SDK de Azure Speech cuando están configurados y degradan al stub en caso de fallos puntuales.
 ```
 
 ## Mapeo de errores a HTTP
