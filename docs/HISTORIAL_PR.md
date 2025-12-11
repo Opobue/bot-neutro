@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-14 – Hardening tests de providers Azure (independientes de entorno real)
+
+- Se ajustan los tests de `factory` para que la ruta de error por ausencia de SDK de Azure se pruebe mediante mocks sobre `_require_sdk`, en lugar de depender de la instalación local del SDK.
+- Se añade un test simétrico para STT (`AzureSTTProvider`) que verifica el mismo patrón de fallo.
+- Se documenta en el NORTE que los unit tests de providers externos son deterministas y no consultan el entorno real; las pruebas con Azure real se reservarán para una capa de integración futura.
+
 ## 2025-12-13 – Azure Speech real (opt-in) con fallback a stub
 
 - Se activan las implementaciones reales de `AzureSTTProvider` y `AzureTTSProvider` con import perezoso del SDK de Azure Speech.

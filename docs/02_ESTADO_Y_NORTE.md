@@ -90,6 +90,10 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Pipeline de audio completo con almacenamiento en memoria
 - Pipeline de audio con providers enchufables (stub por defecto, Azure seleccionable por ENV)
 - Azure Speech STT/TTS real disponible como opt-in local, con fallback automático a stub ante fallos
+- Tests unitarios de providers externos deterministas y aislados del entorno real:
+  - No dependen de SDKs instalados ni credenciales reales.
+  - Los errores de dependencia (p. ej. falta de SDK) se validan mediante mocks controlados.
+  - Las pruebas reales con Azure se implementarán como capa de integración futura cuando se habiliten.
 - Headers Munay (`x-munay-user-id`, `x-munay-context`) integrados
 - Métricas runtime (`METRICS`) activas
 - Rate-limit funcional por API key

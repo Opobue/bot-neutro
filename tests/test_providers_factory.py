@@ -74,11 +74,28 @@ def test_build_tts_provider_missing_dependency(monkeypatch):
     monkeypatch.setenv("AZURE_SPEECH_KEY", "dummy-key")
     monkeypatch.setenv("AZURE_SPEECH_REGION", "eastus")
 
-    monkeypatch.delenv("AZURE_SPEECH_STT_LANGUAGE_DEFAULT", raising=False)
-    monkeypatch.delenv("AZURE_SPEECH_TTS_VOICE_DEFAULT", raising=False)
-    monkeypatch.delitem(sys.modules, "azure", raising=False)
-    monkeypatch.delitem(sys.modules, "azure.cognitiveservices", raising=False)
-    monkeypatch.delitem(sys.modules, "azure.cognitiveservices.speech", raising=False)
+    def _raise_import_error():
+        raise ImportError("no azure sdk for tests")
+
+    monkeypatch.setattr(
+        AzureTTSProvider, "_require_sdk", staticmethod(_raise_import_error), raising=True
+    )
 
     with pytest.raises(ValueError):
         factory.build_tts_provider()
+
+
+def test_build_stt_provider_missing_dependency(monkeypatch):
+    monkeypatch.setenv("AUDIO_STT_PROVIDER", "azure")
+    monkeypatch.setenv("AZURE_SPEECH_KEY", "dummy-key")
+    monkeypatch.setenv("AZURE_SPEECH_REGION", "eastus")
+
+    def _raise_import_error():
+        raise ImportError("no azure sdk for tests")
+
+    monkeypatch.setattr(
+        AzureSTTProvider, "_require_sdk", staticmethod(_raise_import_error), raising=True
+    )
+
+    with pytest.raises(ValueError):
+        factory.build_stt_provider()
