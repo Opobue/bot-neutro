@@ -1,7 +1,7 @@
 from uuid import uuid4
 from typing import Dict, Optional
 
-from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi import FastAPI, File, Form, Header, Request, UploadFile
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from . import __version__
@@ -142,6 +142,9 @@ def create_app() -> FastAPI:
         audio_file: UploadFile = File(..., description="Audio en formato soportado"),
         locale: str = Form("es-CO"),
         user_external_id: Optional[str] = Form(None),
+        x_munay_llm_tier: Optional[str] = Header(
+            default=None, alias="x-munay-llm-tier"
+        ),
     ):
         METRICS.inc_request("/audio")
 
@@ -175,6 +178,12 @@ def create_app() -> FastAPI:
         if munay_context:
             client_meta["munay_context"] = munay_context
 
+        llm_tier: Optional[str] = None
+        if x_munay_llm_tier:
+            tier_normalized = x_munay_llm_tier.strip().lower()
+            if tier_normalized in {"freemium", "premium"}:
+                llm_tier = tier_normalized
+
         ctx: AudioRequestContext = {
             "corr_id": corr_id,
             "api_key_id": api_key_id or "",
@@ -184,6 +193,9 @@ def create_app() -> FastAPI:
             "user_external_id": user_external_id,
             "client_meta": client_meta or None,
         }
+
+        if llm_tier:
+            ctx["llm_tier"] = llm_tier
 
         result: AudioResponseContext | PipelineError = audio_pipeline.process(ctx)
 

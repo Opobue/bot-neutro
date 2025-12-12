@@ -1,7 +1,19 @@
 from bot_neutro.audio_pipeline import AudioPipeline
 from bot_neutro.audio_storage_inmemory import InMemoryAudioSessionRepository
+from bot_neutro.providers.interfaces import LLMProvider
 from bot_neutro.providers.azure import AzureSTTProvider, AzureTTSProvider, AzureSpeechConfig
 from bot_neutro.providers.stub import StubLLMProvider, StubSTTProvider, StubTTSProvider
+
+
+class CapturingLLMProvider(LLMProvider):
+    def __init__(self) -> None:
+        self.last_context = None
+        self.provider_id = "capturing-llm"
+        self.latency_ms = 0
+
+    def generate_reply(self, transcript: str, context: dict) -> str:
+        self.last_context = context
+        return "ok"
 
 
 def test_audio_pipeline_with_stub_providers_matches_stub_contract():
@@ -49,6 +61,53 @@ def test_audio_pipeline_with_stub_providers_matches_stub_contract():
     assert session["provider_tts"] == "stub-tts"
     assert session["corr_id"] == "corr-123"
     assert session["meta_tags"] == {"context": "diario_emocional"}
+
+
+def test_audio_pipeline_defaults_llm_tier_to_freemium():
+    repo = InMemoryAudioSessionRepository()
+    capturing_llm = CapturingLLMProvider()
+    pipeline = AudioPipeline(
+        session_repo=repo,
+        stt_provider=StubSTTProvider(),
+        tts_provider=StubTTSProvider(),
+        llm_provider=capturing_llm,
+    )
+
+    result = pipeline.process(
+        {
+            "api_key_id": "test-key",
+            "audio_bytes": b"fake audio",
+            "mime_type": "audio/wav",
+            "locale": "es-CO",
+        }
+    )
+
+    assert "code" not in result
+    assert capturing_llm.last_context["llm_tier"] == "freemium"
+
+
+def test_audio_pipeline_uses_llm_tier_from_ctx_when_present():
+    repo = InMemoryAudioSessionRepository()
+    capturing_llm = CapturingLLMProvider()
+    pipeline = AudioPipeline(
+        session_repo=repo,
+        stt_provider=StubSTTProvider(),
+        tts_provider=StubTTSProvider(),
+        llm_provider=capturing_llm,
+    )
+
+    result = pipeline.process(
+        {
+            "api_key_id": "test-key",
+            "audio_bytes": b"fake audio",
+            "mime_type": "audio/wav",
+            "locale": "es-CO",
+            "llm_tier": "premium",
+        }
+    )
+
+    assert "code" not in result
+    assert capturing_llm.last_context["llm_tier"] == "premium"
 
 
 def test_audio_pipeline_falls_back_when_azure_stt_fails(monkeypatch):

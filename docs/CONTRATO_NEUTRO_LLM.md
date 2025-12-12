@@ -36,5 +36,5 @@ Define el rol y expectativas del componente de lenguaje dentro del Bot Neutro, m
 
 ## Uso recomendado de `context`
 - Clave sugerida: `context["llm_tier"]` ∈ {`"freemium"`, `"premium"`} para elegir el modelo dentro del provider.
-- Si falta la clave, el provider debe asumir `"freemium"` (o su valor por defecto interno).
+- La capa que construye el contexto (HTTP o lógica de negocio derivada de API key) es responsable de normalizar y validar; cualquier valor ausente o inválido debe convertirse en `"freemium"` antes de invocar al provider.
 - El resto de metadata de negocio (usuario, tags, etc.) viaja en `context` pero no altera la firma.

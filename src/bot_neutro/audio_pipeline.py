@@ -141,8 +141,10 @@ class AudioPipeline:
         except Exception as exc:  # pragma: no cover - defensive branch
             return self._error(code="stt_error", message=str(exc))
 
+        llm_tier = ctx.get("llm_tier", "freemium")
+
         llm_context = {
-            "llm_tier": "freemium",
+            "llm_tier": llm_tier,
             "metadata": metadata or {},
             "user_external_id": ctx.get("user_external_id") or munay_user_id,
         }
