@@ -90,6 +90,8 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Pipeline de audio completo con almacenamiento en memoria
 - Pipeline de audio con providers enchufables (stub por defecto, Azure seleccionable por ENV)
 - Azure Speech STT/TTS real disponible como opt-in local, con fallback automático a stub ante fallos
+- LLMProvider neutral consolidado: stub por defecto, proveedores reales activables por ENV (`LLM_PROVIDER`)
+- Selección freemium/premium modelada vía `context["llm_tier"]`, sin acoplamiento todavía a la capa HTTP
 - Tests unitarios de providers externos deterministas y aislados del entorno real:
   - No dependen de SDKs instalados ni credenciales reales.
   - Los errores de dependencia (p. ej. falta de SDK) se validan mediante mocks controlados.
@@ -115,6 +117,11 @@ Cada nuevo hilo debe comenzar con este mensaje:
   Remove-Item Env:AZURE_SPEECH_STT_LANGUAGE_DEFAULT -ErrorAction SilentlyContinue
   Remove-Item Env:AZURE_SPEECH_TTS_VOICE_DEFAULT -ErrorAction SilentlyContinue
   Remove-Item Env:AZURE_SPEECH_TEST_WAV_PATH -ErrorAction SilentlyContinue
+  Remove-Item Env:LLM_PROVIDER -ErrorAction SilentlyContinue
+  Remove-Item Env:OPENAI_API_KEY -ErrorAction SilentlyContinue
+  Remove-Item Env:OPENAI_BASE_URL -ErrorAction SilentlyContinue
+  Remove-Item Env:OPENAI_MODEL_FREEMIUM -ErrorAction SilentlyContinue
+  Remove-Item Env:OPENAI_MODEL_PREMIUM -ErrorAction SilentlyContinue
   ```
 
 - Comandos oficiales:
@@ -125,6 +132,7 @@ Cada nuevo hilo debe comenzar con este mensaje:
   ```
 
 - Regla de oro: `--cov` se ejecuta siempre en modo stub (sin credenciales ni SDK Azure). Este será el paso obligatorio en CI.
+- Futuras pruebas reales de LLM usarán un marcador dedicado (p. ej. `llm_integration`) y seguirán siendo opt-in, igual que Azure.
 
 ### 9.2 Modo Azure opt-in (integración manual)
 - Cargar variables con `. .\set_env_azure_speech.ps1` (fuera de control de versiones) y activar el `.venv`.
@@ -138,13 +146,10 @@ Cada nuevo hilo debe comenzar con este mensaje:
 
 ---
 
-## 10. Mini-milestone previo a LLM
-- Próximo paso: consolidar el contrato `LLMProvider` antes de conectar con cualquier proveedor real.
-- Alcance esperado:
-  - Documentar en `docs/02_ESTADO_Y_NORTE.md` y contratos asociados la firma neutral: `generate_reply(transcript: str, context: dict) -> str`.
-  - Mantener `provider_id` y `latency_ms` alineados al resto de providers.
-  - Garantizar que el stub LLM sea determinista para tests y que ninguna prueba estándar requiera red ni SDKs externos.
-- Las integraciones Azure/OpenAI/SenseiKaizen se activarán luego como opt-in, siguiendo el mismo patrón que STT/TTS.
+## 10. Integración LLM
+- Contrato `LLMProvider` operativo con stub determinista como default.
+- OpenAI disponible como provider opt-in vía `LLM_PROVIDER=openai`, con fallback automático al stub y selección de modelo mediante `context["llm_tier"]` (`freemium`/`premium`).
+- Futuras integraciones (Azure OpenAI, modelos locales) seguirán el mismo patrón sin requerir credenciales en CI.
 
 ---
 

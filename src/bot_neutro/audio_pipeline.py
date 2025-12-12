@@ -141,14 +141,14 @@ class AudioPipeline:
         except Exception as exc:  # pragma: no cover - defensive branch
             return self._error(code="stt_error", message=str(exc))
 
+        llm_context = {
+            "llm_tier": "freemium",
+            "metadata": metadata or {},
+            "user_external_id": ctx.get("user_external_id") or munay_user_id,
+        }
+
         try:
-            reply_text = self._llm_provider.generate_reply(
-                stt_result.text,
-                {
-                    "metadata": metadata or {},
-                    "user_external_id": ctx.get("user_external_id") or munay_user_id,
-                },
-            )
+            reply_text = self._llm_provider.generate_reply(stt_result.text, llm_context)
         except TimeoutError as exc:  # pragma: no cover - defensive branch
             return self._error(code="provider_timeout", message=str(exc))
         except Exception as exc:  # pragma: no cover - defensive branch
