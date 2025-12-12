@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-15 – Logging Azure Speech y prueba de integración opcional
+
+- Se añaden logs claros en los providers Azure STT/TTS antes del fallback para exponer razones y detalles de cancelación.
+- Se crea una prueba de integración opcional (`-m azure_integration`) que usa un WAV real definido por ENV para verificar el camino de STT real.
+- Se documenta en `RUNBOOK_AZURE_SPEECH.md` cómo habilitar Azure Speech y ejecutar la prueba; las unitarias siguen siendo stub y deterministas.
+
 ## 2025-12-14 – Hardening tests de providers Azure (independientes de entorno real)
 
 - Se ajustan los tests de `factory` para que la ruta de error por ausencia de SDK de Azure se pruebe mediante mocks sobre `_require_sdk`, en lugar de depender de la instalación local del SDK.
