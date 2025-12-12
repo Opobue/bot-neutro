@@ -10,10 +10,14 @@ cuando se usa el modo stub.
 from __future__ import annotations
 
 import os
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
 from .interfaces import LLMProvider, STTProvider, STTResult, TTSProvider, TTSResult
+
+
+logger = logging.getLogger("bot_neutro")
 
 
 @dataclass
@@ -97,10 +101,27 @@ class AzureSTTProvider(STTProvider):
             return STTResult(text=result.text, provider_id=self.provider_id, raw_transcript=raw_transcript)
 
         if result.reason == speechsdk.ResultReason.NoMatch:
+            logger.warning(
+                "azure_stt_no_match",
+                extra={
+                    "provider_id": self.provider_id,
+                    "locale": locale,
+                    "reason": getattr(result.reason, "name", str(result.reason)),
+                },
+            )
             raise AzureProviderError("Azure STT returned NoMatch")
 
         if result.reason == speechsdk.ResultReason.Canceled:
             details = speechsdk.CancellationDetails.from_result(result)
+            logger.warning(
+                "azure_stt_canceled",
+                extra={
+                    "provider_id": self.provider_id,
+                    "locale": locale,
+                    "reason": getattr(details.reason, "name", str(details.reason)),
+                    "error_details": getattr(details, "error_details", None),
+                },
+            )
             raise AzureProviderError(
                 f"Azure STT canceled: {details.reason}; {details.error_details}"
             )
@@ -111,6 +132,15 @@ class AzureSTTProvider(STTProvider):
         try:
             return self._transcribe_with_sdk(audio_bytes, locale)
         except Exception as exc:  # pragma: no cover - exercised via fallback tests
+            logger.warning(
+                "azure_stt_error",
+                exc_info=exc,
+                extra={
+                    "provider_id": self.provider_id,
+                    "locale": locale,
+                    "exc_type": type(exc).__name__,
+                },
+            )
             if not self._fallback:
                 raise
 
@@ -182,6 +212,16 @@ class AzureTTSProvider(TTSProvider):
 
         if result.reason == speechsdk.ResultReason.Canceled:
             details = speechsdk.CancellationDetails.from_result(result)
+            logger.warning(
+                "azure_tts_canceled",
+                extra={
+                    "provider_id": self.provider_id,
+                    "locale": locale,
+                    "voice": voice or self._config.tts_voice_default,
+                    "reason": getattr(details.reason, "name", str(details.reason)),
+                    "error_details": getattr(details, "error_details", None),
+                },
+            )
             raise AzureProviderError(
                 f"Azure TTS canceled: {details.reason}; {details.error_details}"
             )
@@ -192,6 +232,16 @@ class AzureTTSProvider(TTSProvider):
         try:
             return self._synthesize_with_sdk(text, locale, voice)
         except Exception as exc:  # pragma: no cover - exercised via fallback tests
+            logger.warning(
+                "azure_tts_error",
+                exc_info=exc,
+                extra={
+                    "provider_id": self.provider_id,
+                    "locale": locale,
+                    "voice": voice,
+                    "exc_type": type(exc).__name__,
+                },
+            )
             if not self._fallback:
                 raise
 
