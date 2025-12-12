@@ -93,24 +93,70 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Tests unitarios de providers externos deterministas y aislados del entorno real:
   - No dependen de SDKs instalados ni credenciales reales.
   - Los errores de dependencia (p. ej. falta de SDK) se validan mediante mocks controlados.
-  - Las pruebas reales con Azure se implementarán como capa de integración futura cuando se habiliten.
+  - Pruebas reales con Azure existen como capa de integración opcional (`-m azure_integration`), nunca obligatoria en CI.
 - Headers Munay (`x-munay-user-id`, `x-munay-context`) integrados
 - Métricas runtime (`METRICS`) activas
 - Rate-limit funcional por API key
-- 100% de pruebas unitarias verdes  
-- PRs recientes documentados en `HISTORIAL_PR.md`  
+- 100% de pruebas unitarias verdes
+- PRs recientes documentados en `HISTORIAL_PR.md`
 
 ---
 
-## 9. Filosofía del Proyecto
-- **Máxima claridad**  
-- **Cero contradicciones**  
-- **Iteración sin pérdidas de coherencia**  
-- La IA actúa como arquitecto, no como creativo descontrolado  
+## 9. Pruebas oficiales (stub vs Azure)
+
+### 9.1 Modo stub (base CI y día a día)
+- Limpiar ENV antes de probar para forzar stub y que cualquier test `azure_integration` quede `skipped`:
+
+  ```powershell
+  Remove-Item Env:AUDIO_STT_PROVIDER -ErrorAction SilentlyContinue
+  Remove-Item Env:AUDIO_TTS_PROVIDER -ErrorAction SilentlyContinue
+  Remove-Item Env:AZURE_SPEECH_KEY -ErrorAction SilentlyContinue
+  Remove-Item Env:AZURE_SPEECH_REGION -ErrorAction SilentlyContinue
+  Remove-Item Env:AZURE_SPEECH_STT_LANGUAGE_DEFAULT -ErrorAction SilentlyContinue
+  Remove-Item Env:AZURE_SPEECH_TTS_VOICE_DEFAULT -ErrorAction SilentlyContinue
+  Remove-Item Env:AZURE_SPEECH_TEST_WAV_PATH -ErrorAction SilentlyContinue
+  ```
+
+- Comandos oficiales:
+
+  ```powershell
+  python -m pytest -q
+  python -m pytest --cov=src --cov-fail-under=80
+  ```
+
+- Regla de oro: `--cov` se ejecuta siempre en modo stub (sin credenciales ni SDK Azure). Este será el paso obligatorio en CI.
+
+### 9.2 Modo Azure opt-in (integración manual)
+- Cargar variables con `. .\set_env_azure_speech.ps1` (fuera de control de versiones) y activar el `.venv`.
+- Validar providers reales con:
+
+  ```powershell
+  python -m pytest -m azure_integration -q
+  ```
+
+- Este bloque es opcional y no afecta al coverage base ni al pipeline CI.
+
+---
+
+## 10. Mini-milestone previo a LLM
+- Próximo paso: consolidar el contrato `LLMProvider` antes de conectar con cualquier proveedor real.
+- Alcance esperado:
+  - Documentar en `docs/02_ESTADO_Y_NORTE.md` y contratos asociados la firma neutral: `generate_reply(transcript: str, context: dict) -> str`.
+  - Mantener `provider_id` y `latency_ms` alineados al resto de providers.
+  - Garantizar que el stub LLM sea determinista para tests y que ninguna prueba estándar requiera red ni SDKs externos.
+- Las integraciones Azure/OpenAI/SenseiKaizen se activarán luego como opt-in, siguiendo el mismo patrón que STT/TTS.
+
+---
+
+## 11. Filosofía del Proyecto
+- **Máxima claridad**
+- **Cero contradicciones**
+- **Iteración sin pérdidas de coherencia**
+- La IA actúa como arquitecto, no como creativo descontrolado
 - Cada avance debe poder reproducirse sin error
 
 ---
 
-## 10. Mantenimiento
+## 12. Mantenimiento
 Toda evolución del proyecto DEBE modificar este archivo.
 

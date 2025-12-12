@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-16 – Órdenes de prueba stub vs Azure y mini-milestone LLM
+
+- Se formalizan los comandos oficiales para pruebas en modo stub y con Azure opt-in en `docs/02_ESTADO_Y_NORTE.md` y `RUNBOOK_AZURE_SPEECH.md`, incluyendo limpieza de variables de entorno antes de `--cov`.
+- Se refuerza que el coverage (`--cov=src --cov-fail-under=80`) se ejecuta siempre sin dependencias de Azure y que los tests `azure_integration` son opcionales.
+- Se documenta el mini-milestone previo a LLM: consolidar el contrato neutral `LLMProvider` (`generate_reply(transcript: str, context: dict) -> str` con `provider_id`/`latency_ms`) antes de integrar proveedores reales.
+
 ## 2025-12-15 – Logging Azure Speech y prueba de integración opcional
 
 - Se añaden logs claros en los providers Azure STT/TTS antes del fallback para exponer razones y detalles de cancelación.
