@@ -18,15 +18,24 @@ class TTSResult:
 
 
 class STTProvider:
+    provider_id: str = "stt"
+    latency_ms: int = 0
+
     def transcribe(self, audio_bytes: bytes, locale: str) -> STTResult:
         raise NotImplementedError
 
 
 class TTSProvider:
+    provider_id: str = "tts"
+    latency_ms: int = 0
+
     def synthesize(self, text: str, locale: str, voice: Optional[str] = None) -> TTSResult:
         raise NotImplementedError
 
 
 class LLMProvider:
+    provider_id: str = "llm"
+    latency_ms: int = 0
+
     def generate_reply(self, transcript: str, context: dict) -> str:
         raise NotImplementedError
