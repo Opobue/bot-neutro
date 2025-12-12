@@ -20,3 +20,9 @@ Define el rol y expectativas del componente de lenguaje dentro del Bot Neutro, m
 - El manejo de errores y su registro en métricas concuerda con las aserciones de la suite de observabilidad.
 - No modifica firmas de endpoints ni lógica de runtime, por lo que las pruebas de `/audio` y métricas permanecen válidas.
 - La neutralidad de proveedor evita cambios en mocks o configuraciones verificadas por `pytest -q`.
+
+## Contrato operativo neutral
+- Interfaz propuesta: `generate_reply(transcript: str, context: dict) -> str`.
+- Atributos esperados alineados a otros providers: `provider_id: str` y `latency_ms: int` (opcional pero recomendado para métricas homogéneas).
+- El stub LLM debe ser determinista y libre de dependencias externas para que los tests base y coverage funcionen sin red ni SDKs.
+- Integraciones reales (Azure OpenAI, OpenAI, SenseiKaizen/Munay) se habilitarán como opt-in, sin modificar el contrato ni exigir variables de entorno en CI.
