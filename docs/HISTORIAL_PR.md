@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-17 – LLMProvider neutral consolidado y wiring stub en pipeline de audio
+
+- Se consolida el contrato `LLMProvider` con atributos `provider_id`/`latency_ms` alineados a STT/TTS y firma `generate_reply(transcript: str, context: dict) -> str`.
+- Se implementa `StubLLMProvider` determinista que siempre devuelve `"stub reply text"` y mantiene latencia explícita para métricas.
+- La fábrica de providers expone la construcción de LLM stub y el `AudioPipeline` sigue usando providers enchufables sin cambiar el contrato de `/audio`.
+- No se integra ningún LLM externo; se preserva el modo stub y las respuestas actuales.
+
 ## 2025-12-16 – Órdenes de prueba stub vs Azure y mini-milestone LLM
 
 - Se formalizan los comandos oficiales para pruebas en modo stub y con Azure opt-in en `docs/02_ESTADO_Y_NORTE.md` y `RUNBOOK_AZURE_SPEECH.md`, incluyendo limpieza de variables de entorno antes de `--cov`.
