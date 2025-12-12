@@ -211,7 +211,7 @@ class AzureTTSProvider(TTSProvider):
             )
 
         if result.reason == speechsdk.ResultReason.Canceled:
-            details = speechsdk.CancellationDetails.from_result(result)
+            details = speechsdk.SpeechSynthesisCancellationDetails.from_result(result)
             logger.warning(
                 "azure_tts_canceled",
                 extra={
