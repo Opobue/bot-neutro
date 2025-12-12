@@ -5,6 +5,7 @@ import pytest
 
 from bot_neutro.providers import factory
 from bot_neutro.providers.azure import AzureSTTProvider, AzureTTSProvider
+from bot_neutro.providers.openai_llm import OpenAILLMProvider
 from bot_neutro.providers.stub import StubLLMProvider, StubSTTProvider, StubTTSProvider
 
 
@@ -34,8 +35,40 @@ def test_build_tts_provider_defaults_to_stub(monkeypatch):
 
 
 def test_build_llm_provider_is_stub(monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
     provider = factory.build_llm_provider()
     assert isinstance(provider, StubLLMProvider)
+
+
+def test_build_llm_provider_stub_selected_explicitly(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "stub")
+    provider = factory.build_llm_provider()
+    assert isinstance(provider, StubLLMProvider)
+
+
+def test_build_llm_provider_openai_missing_api_key(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "openai")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_MODEL_FREEMIUM", raising=False)
+
+    with pytest.raises(RuntimeError):
+        factory.build_llm_provider()
+
+
+def test_build_llm_provider_openai_missing_dependency(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "openai")
+    monkeypatch.setenv("OPENAI_API_KEY", "dummy")
+    monkeypatch.setenv("OPENAI_MODEL_FREEMIUM", "gpt-4.1-mini")
+
+    def _raise_runtime_error():
+        raise RuntimeError("openai SDK not installed")
+
+    monkeypatch.setattr(
+        OpenAILLMProvider, "_require_client", staticmethod(_raise_runtime_error), raising=True
+    )
+
+    with pytest.raises(RuntimeError):
+        factory.build_llm_provider()
 
 
 def test_build_stt_provider_azure_missing_config(monkeypatch):

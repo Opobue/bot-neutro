@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-17 – OpenAI LLM opt-in y selección freemium/premium
+
+- Se añade `OpenAILLMProvider` como proveedor LLM opt-in, activable vía `LLM_PROVIDER=openai` con fallback automático a `StubLLMProvider`.
+- Se documenta en `docs/02_ESTADO_Y_NORTE.md` y `docs/CONTRATO_NEUTRO_LLM.md` la selección de proveedor por ENV y el uso de `context["llm_tier"]` (`freemium`/`premium`) sin acoplarlo todavía a la capa HTTP.
+- Se crea `docs/RUNBOOK_LLM.md` con instrucciones para operar el LLM en modo stub (CI) y modo OpenAI en local.
+- Se actualiza la factoría de providers (`factory.py`) y el wiring del `AudioPipeline` para usar el `LLMProvider` neutral sin alterar el contrato observable de `/audio`.
+
 ## 2025-12-17 – LLMProvider neutral consolidado y wiring stub en pipeline de audio
 
 - Se consolida el contrato `LLMProvider` con atributos `provider_id`/`latency_ms` alineados a STT/TTS y firma `generate_reply(transcript: str, context: dict) -> str`.

@@ -26,3 +26,15 @@ Define el rol y expectativas del componente de lenguaje dentro del Bot Neutro, m
 - Atributos esperados alineados a otros providers: `provider_id: str` y `latency_ms: int` (opcional pero recomendado para métricas homogéneas).
 - El stub LLM debe ser determinista y libre de dependencias externas para que los tests base y coverage funcionen sin red ni SDKs.
 - Integraciones reales (Azure OpenAI, OpenAI, SenseiKaizen/Munay) se habilitarán como opt-in, sin modificar el contrato ni exigir variables de entorno en CI.
+
+## Selección de proveedor por entorno
+- La variable `LLM_PROVIDER` define qué implementación concreta se usa:
+  - `""`, `stub` o valor ausente → `StubLLMProvider` (modo determinista por defecto).
+  - `openai` → `OpenAILLMProvider` con fallback al stub si hay errores.
+  - Futuros proveedores: `azure_openai`, `local_llm`, etc., se agregarán sin romper el contrato.
+- El contrato de interfaz **no cambia**: `generate_reply(transcript: str, context: dict) -> str`.
+
+## Uso recomendado de `context`
+- Clave sugerida: `context["llm_tier"]` ∈ {`"freemium"`, `"premium"`} para elegir el modelo dentro del provider.
+- Si falta la clave, el provider debe asumir `"freemium"` (o su valor por defecto interno).
+- El resto de metadata de negocio (usuario, tags, etc.) viaja en `context` pero no altera la firma.
