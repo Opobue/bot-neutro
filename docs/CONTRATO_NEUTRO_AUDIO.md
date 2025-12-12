@@ -7,6 +7,7 @@ Define la interacción de audio para el Bot Neutro, manteniendo neutralidad de p
 - **Formato**: `multipart/form-data`
 - **Campo**: `file`
 - **Tipos aceptados**: audio común (ej.: `audio/wav`, `audio/mpeg`); los tipos exactos dependen de validaciones actuales.
+- **Header opcional**: `x-munay-llm-tier` para seleccionar modelo LLM (`freemium`/`premium`, case-insensitive). Valores ausentes o inválidos se tratan como `freemium`.
 
 ## Flujo de procesamiento
 1. Recepción del archivo y validación básica de tipo/tamaño.

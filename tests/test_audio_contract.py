@@ -43,6 +43,23 @@ def test_audio_happy_path_returns_contract_fields_and_headers():
     assert response.headers.get("X-Correlation-Id")
 
 
+def test_audio_allows_setting_premium_tier_via_header():
+    response = client.post(
+        "/audio",
+        files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
+        headers={
+            "X-API-Key": "test-key",
+            "X-Correlation-Id": "test-corr-id",
+            "x-munay-llm-tier": "Premium",
+        },
+        data={"user_external_id": "test-user"},
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["reply_text"] == "stub reply text"
+
+
 def test_audio_without_api_key_returns_unauthorized():
     response = client.post(
         "/audio",

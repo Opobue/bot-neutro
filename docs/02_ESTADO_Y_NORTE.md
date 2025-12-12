@@ -91,7 +91,7 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Pipeline de audio con providers enchufables (stub por defecto, Azure seleccionable por ENV)
 - Azure Speech STT/TTS real disponible como opt-in local, con fallback automático a stub ante fallos
 - LLMProvider neutral consolidado: stub por defecto, proveedores reales activables por ENV (`LLM_PROVIDER`)
-- Selección freemium/premium modelada vía `context["llm_tier"]`, sin acoplamiento todavía a la capa HTTP
+- Selección freemium/premium modelada vía `context["llm_tier"]`, ahora alimentada desde la capa HTTP vía header opcional `x-munay-llm-tier` (`freemium`/`premium`, case-insensitive, default seguro `freemium` ante ausencia o valor inválido)
 - Tests unitarios de providers externos deterministas y aislados del entorno real:
   - No dependen de SDKs instalados ni credenciales reales.
   - Los errores de dependencia (p. ej. falta de SDK) se validan mediante mocks controlados.
@@ -130,6 +130,8 @@ Cada nuevo hilo debe comenzar con este mensaje:
   python -m pytest -q
   python -m pytest --cov=src --cov-fail-under=80
   ```
+
+- El header opcional `x-munay-llm-tier` para `/audio` no altera las pruebas base: si no se envía, el pipeline mantiene `freemium` por defecto y el stub sigue devolviendo `"stub reply text"`.
 
 - Regla de oro: `--cov` se ejecuta siempre en modo stub (sin credenciales ni SDK Azure). Este será el paso obligatorio en CI.
 - Futuras pruebas reales de LLM usarán un marcador dedicado (p. ej. `llm_integration`) y seguirán siendo opt-in, igual que Azure.

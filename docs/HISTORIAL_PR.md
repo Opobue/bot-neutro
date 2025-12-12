@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-18 – Header `x-munay-llm-tier` y propagación de tier al LLM
+
+- `/audio` acepta el header opcional `x-munay-llm-tier` (`freemium`/`premium`, case-insensitive) y lo normaliza a `context["llm_tier"]`.
+- El pipeline de audio propaga la tier al `LLMProvider`, manteniendo default seguro `freemium` cuando falta o es inválida.
+- La respuesta stub y el comportamiento para clientes sin el nuevo header permanecen iguales.
+
 ## 2025-12-17 – OpenAI LLM opt-in y selección freemium/premium
 
 - Se añade `OpenAILLMProvider` como proveedor LLM opt-in, activable vía `LLM_PROVIDER=openai` con fallback automático a `StubLLMProvider`.
