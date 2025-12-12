@@ -205,3 +205,11 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Script local para configurar Azure Speech (no debe entrar al repo)
+set_env_azure_speech.ps1
+
+# Audios WAV locales de prueba (grabaciones manuales del dev)
+*.wav
+
+
