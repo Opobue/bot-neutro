@@ -178,6 +178,16 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Futuras integraciones (Azure OpenAI, modelos locales) seguirán el mismo patrón sin requerir credenciales en CI.
 - Regla adicional: no se permiten paquetes locales con nombres que choquen con dependencias críticas (p. ej. `httpx`, `openai`). Cualquier cliente HTTP interno debe vivir bajo un nombre propio (ej. `httpx_local`).
 
+- Comportamiento ante errores de OpenAI:
+  - Si el SDK lanza errores de cuota/rate limit (por ejemplo `insufficient_quota`, HTTP 429), el provider registra `openai_llm_error` en logs y cae de forma controlada al `StubLLMProvider`.
+  - En esos casos, el endpoint `/audio` sigue devolviendo `200 OK` y la métrica `usage.provider_llm` incluye la cadena de fallback (ej. `openai-llm|stub-llm`).
+  - Este patrón garantiza que problemas externos de facturación/cuota no rompan el contrato HTTP ni la experiencia del cliente.
+
+- Patrón de uso recomendado:
+  - `freemium` (mini) como tier por defecto para casi todas las llamadas.
+  - `premium` solo cuando el cliente envía el header `x-munay-llm-tier: Premium`, de forma explícita y consciente del mayor coste.
+  - El mini-milestone actual se considera **“Audio + LLM listo para pruebas con crédito real”**: en cuanto la cuenta disponga de saldo, `/audio` empezará a devolver respuestas reales del LLM sin cambios de código.
+
 ---
 
 ## 11. Filosofía del Proyecto

@@ -3,9 +3,15 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-20 – Cierre mini-milestone Audio + LLM M1 (fallback y operación)
+
+- Se documenta en `02_ESTADO_Y_NORTE.md` y `RUNBOOK_LLM.md` el comportamiento del provider OpenAI ante errores de cuota/rate limit (`insufficient_quota` → fallback controlado al stub).
+- Se explicita el patrón recomendado de uso freemium/premium y se marca el estado del sistema como “Audio + LLM listo para pruebas con crédito real”.
+- No se modifica código: el pipeline `/audio` y las respuestas HTTP permanecen iguales; solo se clarifica la operación ante fallos externos del proveedor.
+
 ## 2025-12-20 – Eliminación de sombra local sobre `httpx` para OpenAI LLM
 
-- Se renombra el paquete local `httpx/` a `httpx_local/` para liberar el nombre `httpx` y permitir que el SDK de OpenAI use la biblioteca oficial de `site-packages`.
+ - Se renombra el paquete local `httpx/` a `httpx_local/` para liberar el nombre `httpx` y permitir que el SDK de OpenAI use la biblioteca oficial de `site-packages`.
 - No se modifica el contrato HTTP ni el pipeline `/audio`; solo se elimina el conflicto de import.
 - Los tests base (`pytest -q`, `pytest --cov=src --cov-fail-under=80`) y la prueba opt-in `llm_integration` pasan con el SDK de OpenAI usando el `httpx` oficial.
 
