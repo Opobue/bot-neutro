@@ -67,3 +67,18 @@ Remove-Item Env:LLM_PROVIDER, Env:OPENAI_API_KEY, Env:OPENAI_BASE_URL, Env:OPENA
 - Los tests unitarios y de cobertura (`pytest -q`, `pytest --cov=src --cov-fail-under=80`) se ejecutan siempre en modo stub sin depender de OpenAI ni de red.
 - Si `LLM_PROVIDER` tiene un valor desconocido, el sistema registra un warning y cae a `StubLLMProvider`.
 - La selección de modelo freemium/premium se controla vía `context["llm_tier"]`; si no se envía, se asume `"freemium"`.
+
+- Manejo de errores de cuota / rate limit:
+  - Si la cuenta de OpenAI no tiene crédito o excede su cuota, el SDK puede devolver HTTP 429 con código `insufficient_quota`.
+  - En ese caso, el provider captura la excepción, registra un warning `openai_llm_error` y usa el stub como fallback.
+  - El cliente sigue recibiendo `200 OK` con `reply_text` generado por el stub y `usage.provider_llm = "openai-llm|stub-llm"` (o similar).
+  - Esto es intencional: el Bot Neutro nunca se cae por temas de facturación externa; simplemente degrada a modo stub.
+
+- Patrón de operación recomendado:
+  - Mantener `OPENAI_MODEL_FREEMIUM` apuntando a un modelo económico (ej. `gpt-4.1-mini`) para la mayoría de llamadas.
+  - Reservar `OPENAI_MODEL_PREMIUM` (ej. `gpt-4.1`) para casos en que el cliente envía `x-munay-llm-tier: Premium`.
+  - Validar periódicamente en el panel de OpenAI que exista crédito suficiente antes de pruebas intensivas.
+
+- Estado actual del milestone:
+  - El pipeline `/audio` funciona en modo stub sin depender de OpenAI.
+  - La integración real OpenAI está verificada hasta el punto de manejo de errores de cuota; las respuestas “full LLM” dependen únicamente de que haya crédito disponible en la cuenta.
