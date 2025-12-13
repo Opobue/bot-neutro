@@ -176,6 +176,7 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Contrato `LLMProvider` operativo con stub determinista como default.
 - OpenAI disponible como provider opt-in vía `LLM_PROVIDER=openai`, con fallback automático al stub y selección de modelo mediante `context["llm_tier"]` (`freemium`/`premium`).
 - Futuras integraciones (Azure OpenAI, modelos locales) seguirán el mismo patrón sin requerir credenciales en CI.
+- Regla adicional: no se permiten paquetes locales con nombres que choquen con dependencias críticas (p. ej. `httpx`, `openai`). Cualquier cliente HTTP interno debe vivir bajo un nombre propio (ej. `httpx_local`).
 
 ---
 

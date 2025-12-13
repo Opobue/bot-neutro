@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-20 – Eliminación de sombra local sobre `httpx` para OpenAI LLM
+
+- Se renombra el paquete local `httpx/` a `httpx_local/` para liberar el nombre `httpx` y permitir que el SDK de OpenAI use la biblioteca oficial de `site-packages`.
+- No se modifica el contrato HTTP ni el pipeline `/audio`; solo se elimina el conflicto de import.
+- Los tests base (`pytest -q`, `pytest --cov=src --cov-fail-under=80`) y la prueba opt-in `llm_integration` pasan con el SDK de OpenAI usando el `httpx` oficial.
+
 ## 2025-12-19 – Prueba opcional `llm_integration` para OpenAI LLM
 
 - Se añade `tests/test_llm_openai_integration.py` con marcador `llm_integration`, gated por `OPENAI_LLM_TEST_ENABLED`, para validar el wiring real de `OpenAILLMProvider.from_env`.
