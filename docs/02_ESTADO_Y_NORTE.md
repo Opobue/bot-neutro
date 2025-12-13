@@ -146,6 +146,30 @@ Cada nuevo hilo debe comenzar con este mensaje:
 
 - Este bloque es opcional y no afecta al coverage base ni al pipeline CI.
 
+### 9.3 Modo LLM OpenAI opt-in (integración manual)
+- Marcador dedicado: `llm_integration`.
+- Variables requeridas para habilitar la prueba real:
+
+  - `OPENAI_API_KEY`
+  - `OPENAI_MODEL_FREEMIUM`
+  - `OPENAI_LLM_TEST_ENABLED=1`
+
+- Ejemplo de ejecución (PowerShell):
+
+  ```powershell
+  $env:LLM_PROVIDER = "openai"
+  $env:OPENAI_API_KEY = "<TU_API_KEY_OPENAI>"
+  $env:OPENAI_MODEL_FREEMIUM = "gpt-4.1-mini"
+  $env:OPENAI_LLM_TEST_ENABLED = "1"
+
+  python -m pytest -m llm_integration -q
+  ```
+
+- Notas:
+
+  - La prueba es opt-in y queda `skipped` si no se configuran los envs anteriores.
+  - Los comandos base (`pytest -q` y `pytest --cov=src --cov-fail-under=80`) siguen ejecutándose en modo stub sin depender de OpenAI ni de red.
+
 ---
 
 ## 10. Integración LLM
