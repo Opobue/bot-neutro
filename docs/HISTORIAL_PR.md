@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-19 – Prueba opcional `llm_integration` para OpenAI LLM
+
+- Se añade `tests/test_llm_openai_integration.py` con marcador `llm_integration`, gated por `OPENAI_LLM_TEST_ENABLED`, para validar el wiring real de `OpenAILLMProvider.from_env`.
+- Se actualiza `docs/02_ESTADO_Y_NORTE.md` y `docs/RUNBOOK_LLM.md` documentando cómo ejecutar la prueba sin impactar el modo stub ni el CI.
+- No se modifican contratos HTTP ni el comportamiento observable de `/audio`; los tests base y el coverage permanecen iguales.
+
 ## 2025-12-18 – Header `x-munay-llm-tier` y propagación de tier al LLM
 
 - `/audio` acepta el header opcional `x-munay-llm-tier` (`freemium`/`premium`, case-insensitive) y lo normaliza a `context["llm_tier"]`.

@@ -24,4 +24,5 @@ build-backend = "setuptools.build_meta"
 pythonpath = ["src"]
 markers = [
     "azure_integration: optional Azure Speech integration tests",
+    "llm_integration: optional OpenAI LLM integration tests",
 ]

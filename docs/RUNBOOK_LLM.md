@@ -28,6 +28,28 @@ Volver a modo stub (seguro para CI):
 Remove-Item Env:LLM_PROVIDER, Env:OPENAI_API_KEY, Env:OPENAI_BASE_URL, Env:OPENAI_MODEL_FREEMIUM, Env:OPENAI_MODEL_PREMIUM, Env:OPENAI_TIMEOUT_SECONDS -ErrorAction SilentlyContinue
 ```
 
+## Prueba de integración real con OpenAI (llm_integration)
+1. Configura el entorno:
+
+   ```powershell
+   $env:LLM_PROVIDER = "openai"
+   $env:OPENAI_API_KEY = "<TU_API_KEY_OPENAI>"
+   $env:OPENAI_MODEL_FREEMIUM = "gpt-4.1-mini"
+   $env:OPENAI_LLM_TEST_ENABLED = "1"
+   ```
+
+2. (Opcional) Verifica `/audio` en local con OpenAI activo si quieres confirmar el wiring completo.
+3. Ejecuta la prueba dedicada:
+
+   ```powershell
+   python -m pytest -m llm_integration -q
+   ```
+
+4. Resultado esperado:
+
+   - `1 passed` cuando OpenAI responde correctamente.
+   - `0 tests ran` o `skipped` si `OPENAI_LLM_TEST_ENABLED` no está en `"1"` o faltan credenciales.
+
 ## Probar `/audio` en local (OpenAI activo)
 1. Levanta la API:
    ```powershell
