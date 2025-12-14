@@ -30,6 +30,8 @@ Los contratos NO se ignoran, NO se contradicen, NO se redefinen sin orden formal
   * ofrecida como servicio a terceros (empresas, integradores tipo n8n/Make).
 * El diseño es **multi-tenant-ready**: el uso real de múltiples clientes se hará por API keys, pero la filosofía ya asume varios consumidores desde el principio.
 * La priorización de la siguiente capa encima del core (`dashboards`, `cliente oficial`, `planes por API key`) se detalla en `docs/ROADMAP_CAPA_SUPERIOR_V1.md`. Toda evolución debe alinearse a ese roadmap y actualizar este Norte si hay cambios estructurales.
+* El primer cliente oficial definido para `/audio` es un dashboard web mínimo Munay, descrito en
+  `docs/CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` y `docs/UX_CLIENTE_OFICIAL_MUNAY_V1.md`, que actúa como referencia oficial de consumo de la API Pública v1.
 
 ### 2.1 Gobernanza SKB y ADRs
 - `docs/CONTRATO_SKB_GOBERNANZA.md` es contrato fuente para prompts y órdenes (D→D→C, bloqueos y reglas contracts-first).
