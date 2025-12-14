@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-20 – Diseño cliente oficial Munay (dashboard mínimo)
+
+- Se define `CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` como contrato del primer cliente oficial de `/audio` (dashboard web mínimo para subir/grabar audio y consumir la API).
+- Se documenta la UX mínima en `UX_CLIENTE_OFICIAL_MUNAY_V1.md` y se referencia desde `02_ESTADO_Y_NORTE.md`.
+- No se modifica el endpoint `/audio` ni se añade código; es una preparación contracts-first para implementar el cliente oficial en una siguiente orden.
+
 ## 2025-12-20 – ROADMAP_CAPA_SUPERIOR_V1 y visión de siguiente paso
 
 - Se crea `ROADMAP_CAPA_SUPERIOR_V1.md` para comparar y priorizar la siguiente capa encima del core `/audio` (dashboards, primer cliente oficial, límites/planes por `X-API-Key`).
