@@ -1,7 +1,7 @@
 # NORTE MUNAY v2.1 — Estado y Principios Operativos
 
 ## 1. Principio Supremo
-El proyecto Munay/SenseiKaizen debe avanzar sin contradicciones, sin retrocesos, sin redefinir decisiones previamente aprobadas.  
+El proyecto Munay/SenseiKaizen debe avanzar sin contradicciones, sin retrocesos, sin redefinir decisiones previamente aprobadas.
 Toda modificación debe pasar por una **ORDEN KAIZEN** (L1, L2 o L3).
 
 ## 2. Gobernanza del Proyecto
@@ -13,6 +13,22 @@ El proyecto sigue un modelo **Contracts-First**, con la siguiente secuencia OBLI
 4. recién después tocar código
 
 Los contratos NO se ignoran, NO se contradicen, NO se redefinen sin orden formal.
+
+### Visión de plataforma
+
+* `bot-neutro` es el **núcleo API de voz + LLM neutral**.
+* Su objetivo es ofrecer un endpoint HTTP estable que reciba audio y devuelva:
+
+  * transcripción (`transcript`),
+  * respuesta del modelo (`reply_text`),
+  * audio de respuesta opcional (`tts_url`),
+  * métricas de uso (`usage.*`).
+* La API está diseñada para ser:
+
+  * consumida por **Munay** como primer cliente oficial,
+  * reutilizada por otros proyectos propios del autor,
+  * ofrecida como servicio a terceros (empresas, integradores tipo n8n/Make).
+* El diseño es **multi-tenant-ready**: el uso real de múltiples clientes se hará por API keys, pero la filosofía ya asume varios consumidores desde el principio.
 
 ### 2.1 Gobernanza SKB y ADRs
 - `docs/CONTRATO_SKB_GOBERNANZA.md` es contrato fuente para prompts y órdenes (D→D→C, bloqueos y reglas contracts-first).
@@ -176,7 +192,15 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Contrato `LLMProvider` operativo con stub determinista como default.
 - OpenAI disponible como provider opt-in vía `LLM_PROVIDER=openai`, con fallback automático al stub y selección de modelo mediante `context["llm_tier"]` (`freemium`/`premium`).
 - Futuras integraciones (Azure OpenAI, modelos locales) seguirán el mismo patrón sin requerir credenciales en CI.
+- La elección del proveedor LLM (OpenAI, futuros modelos, etc.) es un detalle interno del Bot Neutro.
+- El contrato público `/audio` se mantiene estable: los clientes no necesitan saber qué proveedor hay por debajo, solo confían en:
+
+  * formato de entrada (audio + headers),
+  * formato de salida (JSON con `transcript`, `reply_text`, `usage.*`),
+  * garantías de fallback (stub) ante fallos externos.
 - Regla adicional: no se permiten paquetes locales con nombres que choquen con dependencias críticas (p. ej. `httpx`, `openai`). Cualquier cliente HTTP interno debe vivir bajo un nombre propio (ej. `httpx_local`).
+
+- El detalle de la **API Pública v1** (endpoint `/audio`) se documenta en `docs/CONTRATO_API_PUBLICA_V1.md` y actúa como contrato de producto para clientes externos (incluyendo Munay).
 
 - Comportamiento ante errores de OpenAI:
   - Si el SDK lanza errores de cuota/rate limit (por ejemplo `insufficient_quota`, HTTP 429), el provider registra `openai_llm_error` en logs y cae de forma controlada al `StubLLMProvider`.
