@@ -3,6 +3,19 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-20 – Visión de plataforma y contrato API Pública v1
+
+- Se actualiza `02_ESTADO_Y_NORTE.md` para dejar explícito que `bot-neutro`
+  es una plataforma API de voz + LLM neutral, pensada para múltiples clientes,
+  con Munay como primer consumidor oficial.
+- Se crea `CONTRATO_API_PUBLICA_V1.md` describiendo el endpoint `/audio`
+  como API Pública v1 (headers, body, respuesta, errores, notas de
+  multi-tenant y ejemplos).
+- No se modifica código ni contratos JSON existentes; se trata de una
+  actualización de gobernanza y documentación para consolidar el Bot Neutro
+  como producto vendible. El contrato v1 de `/audio` refleja exactamente
+  el comportamiento ya observado en pruebas locales.
+
 ## 2025-12-20 – Cierre mini-milestone Audio + LLM M1 (fallback y operación)
 
 - Se documenta en `02_ESTADO_Y_NORTE.md` y `RUNBOOK_LLM.md` el comportamiento del provider OpenAI ante errores de cuota/rate limit (`insufficient_quota` → fallback controlado al stub).
