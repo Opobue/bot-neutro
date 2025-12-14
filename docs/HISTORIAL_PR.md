@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-20 – ROADMAP_CAPA_SUPERIOR_V1 y visión de siguiente paso
+
+- Se crea `ROADMAP_CAPA_SUPERIOR_V1.md` para comparar y priorizar la siguiente capa encima del core `/audio` (dashboards, primer cliente oficial, límites/planes por `X-API-Key`).
+- Se documenta en `02_ESTADO_Y_NORTE.md` que la priorización de la capa superior se rige por ese roadmap, sin modificar contratos HTTP ni payloads JSON actuales.
+- No se toca código; es una actualización de gobernanza y planificación para consolidar el Bot Neutro como plataforma de voz + LLM multi-tenant.
+
 ## 2025-12-20 – Visión de plataforma y contrato API Pública v1
 
 - Se actualiza `02_ESTADO_Y_NORTE.md` para dejar explícito que `bot-neutro`
