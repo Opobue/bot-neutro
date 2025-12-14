@@ -3,6 +3,11 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-21 – Implementación cliente oficial Munay v1 (dashboard web mínimo)
+
+- Se crea el proyecto frontend en `clients/munay-dashboard/` (React + TypeScript + Vite) como primer cliente oficial del endpoint `/audio`.
+- Se agrega documentación técnica `CLIENTE_OFICIAL_MUNAY_TECNICO_V1.md` y variables de entorno `.env.example`.
+- No se modifica el contrato HTTP ni el payload JSON de `/audio`; solo se construye el consumidor oficial siguiendo los contratos existentes.
 ## 2025-12-20 – Diseño cliente oficial Munay (dashboard mínimo)
 
 - Se define `CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` como contrato del primer cliente oficial de `/audio` (dashboard web mínimo para subir/grabar audio y consumir la API).

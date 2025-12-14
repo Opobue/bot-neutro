@@ -120,6 +120,7 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Rate-limit funcional por API key
 - 100% de pruebas unitarias verdes
 - PRs recientes documentados en `HISTORIAL_PR.md`
+- Cliente oficial Munay v1 (dashboard web) implementado en `clients/munay-dashboard/`, alineado a `CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` y `CLIENTE_OFICIAL_MUNAY_TECNICO_V1.md`, con registro en `docs/HISTORIAL_PR.md` (2025-12-21).
 
 ---
 
