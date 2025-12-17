@@ -3,6 +3,11 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-17 – Orden Kaizen L1 (auditoría contratos vs código)
+
+- Se documenta la auditoría global de gobernanza L1 en `ORDEN_KAIZEN_L1_AUDITORIA_20251217.md`, cubriendo mapa de repo, middlewares/providers/endpoints y cuadro Contrato ↔ Código.
+- No se realizan cambios funcionales; se dejan hallazgos de privacidad, seguridad y zonas oscuras para futuras órdenes.
+
 ## 2025-12-21 – Implementación cliente oficial Munay v1 (dashboard web mínimo)
 
 - Se crea el proyecto frontend en `clients/munay-dashboard/` (React + TypeScript + Vite) como primer cliente oficial del endpoint `/audio`.
