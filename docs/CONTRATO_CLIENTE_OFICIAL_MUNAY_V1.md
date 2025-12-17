@@ -59,8 +59,10 @@
 - **Estado de error 401**
   - Mensaje claro: “API Key inválida o ausente”.
 
-- **Estado de error 422**
+- **Estado de error 400**
   - Mensaje: “Archivo de audio faltante o formato inválido”.
+  - Nota: las validaciones de formulario del frontend pueden usar códigos 422 internos, pero el backend devuelve 400 cuando el
+    audio falta en la petición.
 
 - **Errores de red / 5xx**
   - Mensaje genérico: “Error de servidor o red. Intenta de nuevo más tarde”.

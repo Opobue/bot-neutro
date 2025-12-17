@@ -121,6 +121,10 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - 100% de pruebas unitarias verdes
 - PRs recientes documentados en `HISTORIAL_PR.md`
 - Cliente oficial Munay v1 (dashboard web) implementado en `clients/munay-dashboard/`, alineado a `CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` y `CLIENTE_OFICIAL_MUNAY_TECNICO_V1.md`, con registro en `docs/HISTORIAL_PR.md` (2025-12-21).
+- README actualizado para reflejar que `/audio` está implementado (antes indicaba stub 501) y documentar el payload real y modo stub por defecto con providers Azure/OpenAI opt-in.
+- Contratos públicos ajustados a error 400 cuando falta audio; el frontend puede mostrar validaciones 422 en la UI, pero el backend responde 400.
+- Storage de sesiones sigue siendo in-memory sin política de retención ni endpoints de lectura; requiere decisión en orden futura.
+- Falta política formal de tiers y costos por API key; se acepta `x-munay-llm-tier` sin validación de plan.
 
 ---
 

@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-17 – Correcciones menores tras auditoría L1 (docs-only)
+
+- Se corrigen referencias a componentes del dashboard en `ORDEN_KAIZEN_L1_AUDITORIA_20251217.md`.
+- Se actualiza `README.md` para reflejar que `/audio` está implementado y usa providers stub por defecto (Azure/OpenAI opt-in).
+- Se alinean `CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` y `CONTRATO_API_PUBLICA_V1.md` con error 400 por audio faltante, dejando nota sobre validaciones 422 del frontend.
+- Se agregan hallazgos al NORTE (`docs/02_ESTADO_Y_NORTE.md`) y se registra esta orden como actualización de gobernanza L1.
+
 ## 2025-12-17 – Orden Kaizen L1 (auditoría contratos vs código)
 
 - Se documenta la auditoría global de gobernanza L1 en `ORDEN_KAIZEN_L1_AUDITORIA_20251217.md`, cubriendo mapa de repo, middlewares/providers/endpoints y cuadro Contrato ↔ Código.
