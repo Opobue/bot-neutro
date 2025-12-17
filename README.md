@@ -7,7 +7,9 @@ bot-neutro es un núcleo contract-first basado en FastAPI que expone los endpoin
 - `GET /readyz`
 - `GET /version`
 - `GET /metrics`
-- `POST /audio` (stub, responde 501 por ahora)
+- `POST /audio` (implementado): acepta `multipart/form-data` con `audio_file` y devuelve JSON con `transcript`, `reply_text`,
+  `usage.*` y `session_id`. El modo por defecto usa providers stub; Azure STT/TTS y OpenAI LLM son opt-in vía variables de
+  entorno. Consulta los contratos en `docs/CONTRATO_API_PUBLICA_V1.md` y `docs/CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md`.
 
 Este repositorio es la base neutra a partir de la cual se clonarán bots específicos (por ejemplo, Munay), respetando los contratos definidos en `docs/CONTRATO_NEUTRO_*.md`.
 

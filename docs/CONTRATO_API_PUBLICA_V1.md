@@ -77,8 +77,10 @@ Donde:
 
 - `401 Unauthorized`
   - Cuando falta `X-API-Key` o no es válida.
-- `422 Unprocessable Entity`
+- `400 Bad Request`
   - Cuando falta el campo `audio_file` o el formato es inválido.
+  - Nota: un cliente puede mapear validaciones de formulario a 422 a nivel de UI, pero el backend responde 400 para audio
+    ausente.
 - `5xx`
   - Errores internos inesperados. El objetivo del diseño es que
     problemas externos (cuota del LLM, proveedor de voz) se traduzcan
