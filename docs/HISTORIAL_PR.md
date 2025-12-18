@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-17 – Kaizen Guardrails + Storage hardening + Stats agregados sin PII
+
+- Se endurece `scripts/kaizen_validate_order.py` para validar metadata real (no placeholders) y aplicar regla: `diff --git` obligatorio solo cuando `TIPO=CAMBIAR`.
+- Se agregan tests `tests/test_kaizen_validate_order.py` para que la calidad de órdenes sea estable y no dependa de “revisar después”.
+- Se completa hardening del storage in-memory con tests de bordes: purge disabled + legado sin `expires_at`.
+- Se crea `CONTRATO_NEUTRO_AUDIO_STATS_V1.md` e implementa `GET /audio/stats` (solo agregados; sin transcript/reply_text/etc).
+
 ## 2025-12-21 – Implementación cliente oficial Munay v1 (dashboard web mínimo)
 
 - Se crea el proyecto frontend en `clients/munay-dashboard/` (React + TypeScript + Vite) como primer cliente oficial del endpoint `/audio`.

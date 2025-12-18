@@ -105,3 +105,39 @@ def test_retention_env_invalid_falls_back_and_clamps(monkeypatch):
     stored2 = repo2.create(_build_session("s-negative", api_key_id="k1"))
 
     assert stored2["expires_at"] == stored2["created_at"]
+
+
+def test_purge_disabled_keeps_expired_sessions(monkeypatch):
+    monkeypatch.setenv("AUDIO_SESSION_PURGE_ENABLED", "0")
+    repo = InMemoryAudioSessionRepository()
+    repo.clear()
+
+    expired_created_at = datetime.utcnow() - timedelta(days=40)
+    expired = _build_session(
+        "s-expired", api_key_id="k1", user_external_id="u1", created_at=expired_created_at
+    )
+    active = _build_session(
+        "s-active", api_key_id="k1", user_external_id="u1", created_at=datetime.utcnow()
+    )
+
+    repo.create(expired)
+    repo.create(active)
+
+    sessions = repo.list_by_api_key("k1", limit=10, offset=0, api_key_id_autenticada="k1")
+    assert len(sessions) == 2
+
+
+def test_legacy_session_without_expires_at_is_treated_as_expired_on_purge():
+    repo = InMemoryAudioSessionRepository()
+    repo.clear()
+
+    repo.create(_build_session("s1", api_key_id="k1", user_external_id="u1"))
+
+    for item in repo._items:
+        if item["id"] == "s1":
+            item.pop("expires_at", None)
+            break
+
+    repo.purge_expired(now=datetime.utcnow())
+    sessions = repo.list_by_api_key("k1", limit=10, offset=0, api_key_id_autenticada="k1")
+    assert sessions == []
