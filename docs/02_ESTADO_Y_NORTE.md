@@ -125,7 +125,8 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Contratos públicos ajustados a error 400 cuando falta audio; el frontend puede mostrar validaciones 422 en la UI, pero el backend responde 400.
 - Storage de sesiones sigue siendo in-memory sin endpoints HTTP de lectura/listado; expires_at/purge/enforcement se implementan como mínimo interno en esta orden.
 - Política de sesiones definida en `CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md` y aplicada como bloqueo para exponer lecturas/dashboards/persistencia hasta cumplir control de acceso y retención.
-- Falta política formal de tiers y costos por API key; se acepta `x-munay-llm-tier` sin validación de plan.
+- Política de tiers/costos LLM definida en `CONTRATO_NEUTRO_LLM_TIERS_COSTOS_V1.md`: la API-Key es la fuente de verdad, el header `x-munay-llm-tier` es solo `tier_solicitado` y no puede escalar privilegios.
+- Pendiente L2 de enforcement: `/audio` debe rechazar tiers superiores al autorizado por API-Key, devolver `X-Outcome-Detail=llm.tier_forbidden`/`llm.tier_invalid` cuando aplique e instrumentar una métrica de denegación de tier (p. ej. `llm_tier_denied_total`) + `errors_total{route="/audio"}` (agregado) y logs correlados.
 
 ---
 

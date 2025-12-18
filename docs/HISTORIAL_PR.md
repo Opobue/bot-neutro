@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-17 – Política de tiers/costos LLM por API-Key (contracts-first, docs-only)
+
+- Se crea `CONTRATO_NEUTRO_LLM_TIERS_COSTOS_V1.md` para definir los tiers permitidos (`freemium|premium`), las cuotas parametrizables y la regla de que la API-Key es la única fuente de verdad; el header `x-munay-llm-tier` es solo `tier_solicitado`.
+- Se actualiza `02_ESTADO_Y_NORTE.md` para referenciar el nuevo contrato y dejar explícito que el enforcement llegará en L2 (este PR no cambia runtime; solo define la política contractual): `/audio` debe rechazar escaladas de tier, devolver `X-Outcome-Detail=llm.tier_forbidden|llm.tier_invalid` y exponer métricas/logs de denegación.
+- Garantías: (a) bloque de no-escalado por header documentado, (b) semántica de errores/headers/correlación (`X-Outcome`, `X-Outcome-Detail`, `X-Correlation-Id`), (c) observabilidad esperada con `llm_tier_denied_total` e incrementos agregados en `errors_total{route="/audio"}`.
+- Deuda anotada: normalizar el orden cronológico completo de `HISTORIAL_PR` en una próxima orden.
+
 ## 2025-12-17 – Kaizen Guardrails + Storage hardening + Stats agregados sin PII
 
 - Se endurece `scripts/kaizen_validate_order.py` para validar metadata real (no placeholders) y aplicar regla: `diff --git` obligatorio solo cuando `TIPO=CAMBIAR`.
