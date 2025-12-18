@@ -52,7 +52,9 @@ def test_audio_pipeline_with_stub_providers_matches_stub_contract():
     assert usage["input_seconds"] == 1.0
     assert usage["output_seconds"] == 1.5
 
-    sessions = repo.list_by_api_key("test-key", limit=10, offset=0)
+    sessions = repo.list_by_api_key(
+        "test-key", limit=10, offset=0, api_key_id_autenticada="test-key"
+    )
     assert len(sessions) == 1
     session = sessions[0]
     assert session["tts_storage_ref"] == "https://example.com/audio/stub.wav"

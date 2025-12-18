@@ -116,7 +116,9 @@ def test_audio_happy_path_creates_audio_session_in_repository():
     data = response.json()
     session_id = data["session_id"]
 
-    sessions = repo.list_by_api_key("test-key", limit=10, offset=0)
+    sessions = repo.list_by_api_key(
+        "test-key", limit=10, offset=0, api_key_id_autenticada="test-key"
+    )
     assert len(sessions) == 1
 
     session = sessions[0]
@@ -156,7 +158,9 @@ def test_audio_with_munay_headers_populates_user_and_context_in_session():
     data = response.json()
     session_id = data["session_id"]
 
-    sessions = repo.list_by_api_key("test-key", limit=10, offset=0)
+    sessions = repo.list_by_api_key(
+        "test-key", limit=10, offset=0, api_key_id_autenticada="test-key"
+    )
     assert len(sessions) == 1
 
     session = sessions[0]
