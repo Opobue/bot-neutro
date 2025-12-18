@@ -12,6 +12,17 @@ Basado en = (hilo/ID o PR/Issue + fecha)
 Objetivo operativo = (1 frase: “qué cambia observablemente”)
 Contratos impactados = (lista de docs/CONTRATO_*.md o “N/A”)
 
+## Filtro NORTE-first (obligatorio)
+MOTIVO DEL CAMBIO (HOY) = (bug reproducible hoy / requisito contractual hoy / desbloqueo de milestone hoy)
+COSTO DE NO HACERLO (HOY) = (qué se rompe o qué se bloquea si NO se hace ya)
+PRUEBA DE EXISTENCIA DEL PROBLEMA (HOY) = (comando/log/escenario mínimo reproducible) o “N/A si es contrato nuevo”
+DECISIÓN = {HACER AHORA | NO HACER AHORA}
+Si DECISIÓN=NO HACER AHORA: mover a “NO IMPLEMENTADO” con razón y desbloqueo.
+
+## Anti-futurismo (regla)
+- Prohibido proponer hardening/perf/escala/robustez “por si acaso” si no existe bug reproducible hoy o requisito de contrato hoy.
+- Prohibido abrir sub-objetivos nuevos dentro de una orden sin pasar el Filtro NORTE-first.
+
 ## Objetivo de esta orden:
 (una línea, accionable)
 
@@ -21,7 +32,6 @@ Contratos impactados = (lista de docs/CONTRATO_*.md o “N/A”)
 
 ## Parches (DIFF) — obligatorios
 - Archivo X:
-
 * diff --git ...
 *
 
