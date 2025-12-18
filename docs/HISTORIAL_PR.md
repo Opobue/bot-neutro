@@ -57,6 +57,13 @@
 - El pipeline de audio propaga la tier al `LLMProvider`, manteniendo default seguro `freemium` cuando falta o es inválida.
 - La respuesta stub y el comportamiento para clientes sin el nuevo header permanecen iguales.
 
+# 2025-12-17 – Hardening retención in-memory y gobernanza Kaizen
+
+- Se endurece el parseo de `AUDIO_SESSION_RETENTION_DAYS` con fallback a 30 y clamp a 0 cuando el valor es inválido o negativo.
+- Se documentan las variables de entorno en `docs/CONFIG/ENV_VARS.md` y se referencia desde README como fuente de verdad.
+- Se añaden tests para validar fallback y clamp de retención en `tests/test_audio_storage_privacidad.py`.
+- Se actualiza la plantilla de órdenes Kaizen para exigir diffs, DoD, sección de “NO IMPLEMENTADO” y comandos de verificación obligatorios.
+
 ## 2025-12-17 – Política de sesiones de audio v1 (contracts-first + enforcement mínimo in-memory)
 
 - Se crea `CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md` para gobernar privacidad, seguridad, retención y control de acceso de `audio_session`.

@@ -1,46 +1,38 @@
-# PLANTILLA ORDEN EJECUCION KAIZEN
+# PLANTILLA — ORDEN DE EJECUCIÓN KAIZEN
 
-Completa los campos sin inventar versiones de NORTE, contratos o CI.
+## Regla de transparencia (obligatoria)
+- Todo lo recomendado debe quedar como: IMPLEMENTADO (con diff + evidencia) o NO IMPLEMENTADO (con por qué).
+- Prohibido omitir recomendaciones “porque no entraron”.
 
-```
-NORTE_VERSION_ACTUAL = vX.Y (copiado de docs/02_ESTADO_Y_NORTE.md)
-Basado en DESCUBRIR@YYYY-MM-DD HH:MM (hilo/ID)
-TIPO={DESCUBRIR|DECIDIR|CAMBIAR|BLOQUEO} · OBJ={1 frase} · ALCANCE={resumen corto}
-Nivel={L1|L2|L3}
-```
+## Objetivo de esta orden:
+(una línea, accionable)
 
-## 1) Objetivo de esta orden
-- ...
+## Alcance / Fuera de alcance:
+- IN:
+- OUT:
 
-## 2) Contexto
-- Resumen de hechos recientes. No inventar NORTE ni contratos.
+## Parches (DIFF) — obligatorios
+- Archivo X:
 
-## 3) Alcance (y límites)
-- Tema único
-- Archivos permitidos/prohibidos
-- Contratos habilitantes
+* diff --git ...
+*
 
-## 4) Plan / Diferencias esperadas
-- ...
+## DoD (Definition of Done) — obligatorio
+- [ ] tests pasan
+- [ ] coverage se mantiene
+- [ ] contratos no se rompen
+- [ ] docs actualizadas
 
-## 5) Pruebas + comandos
-- ...
+## Comandos de verificación — obligatorio
+- pytest -q
+- pytest --cov=src --cov-fail-under=80
 
-## 6) Checks de CI
+## Riesgos y mitigaciones
+- Riesgo:
+- Mitigación:
 
-[CI_REAL] (obligatorio si aplica)
-- ... (solo workflows existentes en .github/workflows)
-
-[CI_FUTURO] (no bloqueante, solo roadmap)
-- ... (checks aspiracionales)
-
-> No uses checks de CI_FUTURO como criterio duro de Definition of Done mientras no existan workflows para ellos.
-
-## 7) Entregables
-- ...
-
-## 8) Plan de despliegue / rollback
-- ...
-
-## 9) Due / Responsables
-- ...
+## NO IMPLEMENTADO (y por qué)
+- Item:
+- Por qué:
+- Riesgo aceptado:
+- Qué lo desbloquea:
