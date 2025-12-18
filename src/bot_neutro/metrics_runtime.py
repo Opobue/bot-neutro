@@ -10,6 +10,8 @@ class InMemoryMetrics:
         self._rate_limit_hits_total: int = 0
         self._mem_reads_total: int = 0
         self._mem_writes_total: int = 0
+        self._audio_sessions_purged_total: int = 0
+        self._audio_sessions_current: int = 0
 
         self._latency_bucket_bounds: List[float] = [0.1, 0.5, 1.0, float("inf")]
         self._latency_buckets: Dict[str, Dict[float, int]] = {}
@@ -44,6 +46,14 @@ class InMemoryMetrics:
         with self._lock:
             self._mem_writes_total += 1
 
+    def inc_audio_sessions_purged(self, count: int) -> None:
+        with self._lock:
+            self._audio_sessions_purged_total += count
+
+    def set_audio_sessions_current(self, count: int) -> None:
+        with self._lock:
+            self._audio_sessions_current = count
+
     def observe_latency(self, route: str, duration_seconds: float) -> None:
         with self._lock:
             self._ensure_latency_route(route)
@@ -75,6 +85,8 @@ class InMemoryMetrics:
                 "rate_limit_hits_total": self._rate_limit_hits_total,
                 "mem_reads_total": self._mem_reads_total,
                 "mem_writes_total": self._mem_writes_total,
+                "audio_sessions_purged_total": self._audio_sessions_purged_total,
+                "audio_sessions_current": self._audio_sessions_current,
                 "latency": latency_snapshot,
                 "latency_bucket_bounds": list(self._latency_bucket_bounds),
             }

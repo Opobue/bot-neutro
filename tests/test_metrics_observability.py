@@ -93,7 +93,7 @@ def test_mem_counters_cover_repository_reads_and_writes():
     }
 
     audio_session_repo.create(session)
-    audio_session_repo.list_by_user("user-1")
+    audio_session_repo.list_by_user("user-1", api_key_id_autenticada="api-metric")
 
     snapshot_after = METRICS.snapshot()
 

@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-17 – Política de sesiones de audio v1 (contracts-first + enforcement mínimo in-memory)
+
+- Se crea `CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md` para gobernar privacidad, seguridad, retención y control de acceso de `audio_session`.
+- Se actualiza `CONTRATO_NEUTRO_STORAGE_SESIONES_AUDIO.md` con `expires_at` y reglas de `list_by_*` que exigen coincidencia de `api_key_id` autenticada.
+- Se incorpora `docs/MATRIZ_CUMPLIMIENTO_CONTRATOS.md` para trazar contrato ↔ código ↔ tests.
+- Se mantiene el bloqueo: no se exponen endpoints de lectura/listado mientras rige la política.
+
 ## 2025-12-17 – Correcciones menores tras auditoría L1 (docs-only)
 
 - Se corrigen referencias a componentes del dashboard en `ORDEN_KAIZEN_L1_AUDITORIA_20251217.md`.

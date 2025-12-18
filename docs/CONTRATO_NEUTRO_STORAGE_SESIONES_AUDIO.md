@@ -11,6 +11,7 @@ Este documento describe el esquema y las operaciones mínimas para persistir ses
 | `api_key_id`              | Identificador lógico de la API key usada.             |
 | `user_external_id`        | Identificador del usuario en el cliente.              |
 | `created_at`              | Timestamp de creación.                                |
+| `expires_at`              | Timestamp de expiración (`created_at` + `retention_days`). |
 | `request_mime_type`       | MIME type del audio de entrada.                       |
 | `request_duration_seconds`| Duración aproximada del audio de entrada.             |
 | `transcript`              | Texto transcrito (STT).                               |
@@ -28,9 +29,14 @@ Este documento describe el esquema y las operaciones mínimas para persistir ses
 
 ## Operaciones mínimas
 
-- `create(audio_session)`: persiste la sesión completa.
-- `list_by_user(user_external_id, limit, offset)`: lista sesiones por usuario ordenadas por `created_at DESC`.
-- `list_by_api_key(api_key_id, limit, offset)`: lista sesiones por API key ordenadas por `created_at DESC`.
+- `create(audio_session)`: persiste la sesión completa y calcula `expires_at` según la política de retención vigente.
+- `list_by_api_key(api_key_id, limit, offset, api_key_id_autenticada)`: lista sesiones por API key ordenadas por `created_at DESC` **solo si** `api_key_id == api_key_id_autenticada`.
+- `list_by_user(user_external_id, limit, offset, api_key_id_autenticada)`: lista sesiones por usuario ordenadas por `created_at DESC` **solo** para sesiones cuyo `api_key_id` coincide con `api_key_id_autenticada`.
+- Si `api_key_id_autenticada` es `None`, la operación debe fallar con `AccessDeniedError` (o equivalente de la implementación).
+
+## Política de privacidad y seguridad
+
+El almacenamiento de sesiones debe cumplir **obligatoriamente** con la política definida en `docs/CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md`.
 
 ## Índices recomendados
 

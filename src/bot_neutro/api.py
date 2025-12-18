@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from . import __version__
-from .audio_storage_inmemory import InMemoryAudioSessionRepository
+from .audio_storage_inmemory import DEFAULT_AUDIO_SESSION_REPOSITORY
 from .audio_pipeline import AudioPipeline, AudioRequestContext, AudioResponseContext, PipelineError
 from .middleware import (
     CorrelationIdMiddleware,
@@ -28,6 +28,10 @@ METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
 # TYPE mem_reads_total counter
 # HELP mem_writes_total Memory writes
 # TYPE mem_writes_total counter
+# HELP audio_sessions_purged_total Audio sessions purged from in-memory storage
+# TYPE audio_sessions_purged_total counter
+# HELP audio_sessions_current Current audio sessions stored in-memory
+# TYPE audio_sessions_current gauge
 # HELP sensei_requests_total Total requests by route
 # TYPE sensei_requests_total counter
 """
@@ -39,7 +43,7 @@ def _with_outcome(response, outcome: str = "ok", detail: str | None = None) -> N
         response.headers["X-Outcome-Detail"] = detail
 
 
-audio_session_repo = InMemoryAudioSessionRepository()
+audio_session_repo = DEFAULT_AUDIO_SESSION_REPOSITORY
 audio_pipeline = AudioPipeline(
     session_repo=audio_session_repo,
     stt_provider=build_stt_provider(),
@@ -121,6 +125,12 @@ def create_app() -> FastAPI:
         )
         dynamic_lines.append(f'mem_reads_total {snapshot["mem_reads_total"]}')
         dynamic_lines.append(f'mem_writes_total {snapshot["mem_writes_total"]}')
+        dynamic_lines.append(
+            f'audio_sessions_purged_total {snapshot["audio_sessions_purged_total"]}'
+        )
+        dynamic_lines.append(
+            f'audio_sessions_current {snapshot["audio_sessions_current"]}'
+        )
 
         for route, value in snapshot["requests_total"].items():
             dynamic_lines.append(f'sensei_requests_total{{route="{route}"}} {value}')
