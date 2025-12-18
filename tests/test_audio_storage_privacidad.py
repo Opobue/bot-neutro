@@ -89,3 +89,19 @@ def test_reads_require_api_key_id_autenticada():
 
     with pytest.raises(AccessDeniedError):
         repo.list_by_user("user-1")
+
+
+def test_retention_env_invalid_falls_back_and_clamps(monkeypatch):
+    monkeypatch.setenv("AUDIO_SESSION_RETENTION_DAYS", "invalid")
+    repo = InMemoryAudioSessionRepository()
+
+    stored = repo.create(_build_session("s-invalid", api_key_id="k1"))
+
+    assert abs((stored["expires_at"] - stored["created_at"]) - timedelta(days=30)) <= timedelta(seconds=2)
+
+    monkeypatch.setenv("AUDIO_SESSION_RETENTION_DAYS", "-5")
+    repo2 = InMemoryAudioSessionRepository()
+
+    stored2 = repo2.create(_build_session("s-negative", api_key_id="k1"))
+
+    assert stored2["expires_at"] == stored2["created_at"]

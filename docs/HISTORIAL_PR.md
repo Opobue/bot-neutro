@@ -3,25 +3,6 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
-## 2025-12-17 – Política de sesiones de audio v1 (contracts-first + enforcement mínimo in-memory)
-
-- Se crea `CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md` para gobernar privacidad, seguridad, retención y control de acceso de `audio_session`.
-- Se actualiza `CONTRATO_NEUTRO_STORAGE_SESIONES_AUDIO.md` con `expires_at` y reglas de `list_by_*` que exigen coincidencia de `api_key_id` autenticada.
-- Se incorpora `docs/MATRIZ_CUMPLIMIENTO_CONTRATOS.md` para trazar contrato ↔ código ↔ tests.
-- Se mantiene el bloqueo: no se exponen endpoints de lectura/listado mientras rige la política.
-
-## 2025-12-17 – Correcciones menores tras auditoría L1 (docs-only)
-
-- Se corrigen referencias a componentes del dashboard en `ORDEN_KAIZEN_L1_AUDITORIA_20251217.md`.
-- Se actualiza `README.md` para reflejar que `/audio` está implementado y usa providers stub por defecto (Azure/OpenAI opt-in).
-- Se alinean `CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` y `CONTRATO_API_PUBLICA_V1.md` con error 400 por audio faltante, dejando nota sobre validaciones 422 del frontend.
-- Se agregan hallazgos al NORTE (`docs/02_ESTADO_Y_NORTE.md`) y se registra esta orden como actualización de gobernanza L1.
-
-## 2025-12-17 – Orden Kaizen L1 (auditoría contratos vs código)
-
-- Se documenta la auditoría global de gobernanza L1 en `ORDEN_KAIZEN_L1_AUDITORIA_20251217.md`, cubriendo mapa de repo, middlewares/providers/endpoints y cuadro Contrato ↔ Código.
-- No se realizan cambios funcionales; se dejan hallazgos de privacidad, seguridad y zonas oscuras para futuras órdenes.
-
 ## 2025-12-21 – Implementación cliente oficial Munay v1 (dashboard web mínimo)
 
 - Se crea el proyecto frontend en `clients/munay-dashboard/` (React + TypeScript + Vite) como primer cliente oficial del endpoint `/audio`.
@@ -75,6 +56,25 @@
 - `/audio` acepta el header opcional `x-munay-llm-tier` (`freemium`/`premium`, case-insensitive) y lo normaliza a `context["llm_tier"]`.
 - El pipeline de audio propaga la tier al `LLMProvider`, manteniendo default seguro `freemium` cuando falta o es inválida.
 - La respuesta stub y el comportamiento para clientes sin el nuevo header permanecen iguales.
+
+## 2025-12-17 – Política de sesiones de audio v1 (contracts-first + enforcement mínimo in-memory)
+
+- Se crea `CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md` para gobernar privacidad, seguridad, retención y control de acceso de `audio_session`.
+- Se actualiza `CONTRATO_NEUTRO_STORAGE_SESIONES_AUDIO.md` con `expires_at` y reglas de `list_by_*` que exigen coincidencia de `api_key_id` autenticada.
+- Se incorpora `docs/MATRIZ_CUMPLIMIENTO_CONTRATOS.md` para trazar contrato ↔ código ↔ tests.
+- Se mantiene el bloqueo: no se exponen endpoints de lectura/listado mientras rige la política.
+
+## 2025-12-17 – Correcciones menores tras auditoría L1 (docs-only)
+
+- Se corrigen referencias a componentes del dashboard en `ORDEN_KAIZEN_L1_AUDITORIA_20251217.md`.
+- Se actualiza `README.md` para reflejar que `/audio` está implementado y usa providers stub por defecto (Azure/OpenAI opt-in).
+- Se alinean `CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` y `CONTRATO_API_PUBLICA_V1.md` con error 400 por audio faltante, dejando nota sobre validaciones 422 del frontend.
+- Se agregan hallazgos al NORTE (`docs/02_ESTADO_Y_NORTE.md`) y se registra esta orden como actualización de gobernanza L1.
+
+## 2025-12-17 – Orden Kaizen L1 (auditoría contratos vs código)
+
+- Se documenta la auditoría global de gobernanza L1 en `ORDEN_KAIZEN_L1_AUDITORIA_20251217.md`, cubriendo mapa de repo, middlewares/providers/endpoints y cuadro Contrato ↔ Código.
+- No se realizan cambios funcionales; se dejan hallazgos de privacidad, seguridad y zonas oscuras para futuras órdenes.
 
 ## 2025-12-17 – OpenAI LLM opt-in y selección freemium/premium
 
