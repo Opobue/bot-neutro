@@ -37,3 +37,13 @@ Luego puedes probar en:
 
 ## Contratos Neutro
 Los contratos y el diseño contract-first viven en `docs/CONTRATO_NEUTRO_*.md` y `docs/NEUTRO_OVERVIEW.md`. Este núcleo servirá como base para bots específicos como Munay.
+
+## Audio session retention (in-memory)
+
+El runtime guarda sesiones de audio en memoria para observabilidad interna y debugging local. Por política de privacidad, no existen endpoints HTTP de lectura/listado mientras rige `CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md`.
+
+Variables de entorno:
+- `AUDIO_SESSION_RETENTION_DAYS` (default 30): días de retención para calcular `expires_at`.
+- `AUDIO_SESSION_PURGE_ENABLED` (default 1): si es "0" deshabilita la purga automática; cualquier otro valor la habilita.
+
+Fuente de verdad de configuración: `docs/CONFIG/ENV_VARS.md`.
