@@ -47,3 +47,10 @@ Variables de entorno:
 - `AUDIO_SESSION_PURGE_ENABLED` (default 1): si es "0" deshabilita la purga automática; cualquier otro valor la habilita.
 
 Fuente de verdad de configuración: `docs/CONFIG/ENV_VARS.md`.
+
+## Verificación de Órdenes Kaizen (calidad de ejecución)
+Antes de abrir PR con cambios, valida que la orden tenga estructura verificable:
+```bash
+python scripts/kaizen_validate_order.py docs/ORDENES/<TU_ORDEN>.md
+```
+Si tus órdenes viven en otro directorio, actualiza la ruta en el comando sin omitir la validación.
