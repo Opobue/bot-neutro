@@ -1,3 +1,5 @@
+import hashlib
+import os
 from uuid import uuid4
 from typing import Dict, Optional
 
@@ -35,6 +37,20 @@ METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
 # HELP sensei_requests_total Total requests by route
 # TYPE sensei_requests_total counter
 """
+
+
+def _parse_stats_max_sessions() -> int:
+    raw = os.getenv("AUDIO_STATS_MAX_SESSIONS", "20000")
+    try:
+        value = int(raw)
+    except ValueError:
+        return 20000
+    if value < 0:
+        return 0
+    return value
+
+
+STATS_MAX_SESSIONS = _parse_stats_max_sessions()
 
 
 def _with_outcome(response, outcome: str = "ok", detail: str | None = None) -> None:
@@ -143,6 +159,56 @@ def create_app() -> FastAPI:
             payload,
             media_type="text/plain; version=0.0.4; charset=utf-8",
         )
+        _with_outcome(response)
+        return response
+
+    @app.get("/audio/stats")
+    async def audio_stats(x_api_key: Optional[str] = Header(None, alias="X-API-Key")):
+        """
+        Stats agregados por tenant. NO expone sesiones ni PII.
+        Cumple CONTRATO_NEUTRO_AUDIO_STATS_V1 + POLITICA_PRIVACIDAD_SESIONES.
+        """
+
+        if not x_api_key:
+            response = JSONResponse({"detail": "X-API-Key required"}, status_code=401)
+            _with_outcome(response, outcome="error", detail="auth.missing_api_key")
+            return response
+
+        METRICS.inc_request("/audio/stats")
+
+        sessions = audio_session_repo.list_by_api_key(
+            x_api_key,
+            limit=STATS_MAX_SESSIONS,
+            offset=0,
+            api_key_id_autenticada=x_api_key,
+        )
+
+        api_key_id = hashlib.sha256(x_api_key.encode("utf-8")).hexdigest()[:12]
+
+        by_stt: Dict[str, int] = {}
+        by_llm: Dict[str, int] = {}
+        by_tts: Dict[str, int] = {}
+        for session in sessions:
+            by_stt[session["provider_stt"]] = by_stt.get(session["provider_stt"], 0) + 1
+            by_llm[session["provider_llm"]] = by_llm.get(session["provider_llm"], 0) + 1
+            by_tts[session["provider_tts"]] = by_tts.get(session["provider_tts"], 0) + 1
+
+        snapshot = METRICS.snapshot()
+        payload = {
+            "api_key_id": api_key_id,
+            "totals": {
+                "sessions_current": len(sessions),
+                "limit_applied": STATS_MAX_SESSIONS,
+                "sessions_purged_total": snapshot.get("audio_sessions_purged_total", 0),
+            },
+            "by_provider": {
+                "stt": by_stt,
+                "llm": by_llm,
+                "tts": by_tts,
+            },
+        }
+
+        response = JSONResponse(payload)
         _with_outcome(response)
         return response
 
