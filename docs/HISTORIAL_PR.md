@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-22 – Contrato Storage & Retención de Sesiones (contracts-first)
+
+- Se crea `CONTRATO_NEUTRO_SESIONES_STORAGE_V1.md` definiendo modelo de datos, retención/TTL, control de acceso y observabilidad declarativa para sesiones de audio.
+- Se actualiza `02_ESTADO_Y_NORTE.md` para reflejar el contrato y mantener el bloqueo de persistencia/lecturas hasta L2.
+- Sin cambios runtime.
+
 ## 2025-12-22 – Implementación L2 enforcement tiers LLM en /audio
 
 - Se valida el header `x-munay-llm-tier` contra el tier autorizado por API key (`freemium|premium`), rechazando valores inválidos con `400` (`X-Outcome-Detail=llm.tier_invalid`).
