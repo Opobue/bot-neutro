@@ -44,7 +44,8 @@ def test_audio_happy_path_returns_contract_fields_and_headers():
     assert response.headers.get("X-Correlation-Id")
 
 
-def test_audio_allows_setting_premium_tier_via_header():
+def test_audio_allows_setting_premium_tier_via_header(monkeypatch):
+    monkeypatch.setenv("MUNAY_LLM_PREMIUM_API_KEY_IDS", derive_api_key_id("test-key"))
     response = client.post(
         "/audio",
         files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},

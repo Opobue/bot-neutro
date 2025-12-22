@@ -7,6 +7,7 @@ class InMemoryMetrics:
         self._lock = Lock()
         self._requests_total: Dict[str, int] = {}
         self._errors_total: Dict[str, int] = {"/audio": 0, "/metrics": 0}
+        self._llm_tier_denied_total: Dict[tuple[str, str, str], int] = {}
         self._rate_limit_hits_total: int = 0
         self._mem_reads_total: int = 0
         self._mem_writes_total: int = 0
@@ -33,6 +34,11 @@ class InMemoryMetrics:
     def inc_error(self, route: str) -> None:
         with self._lock:
             self._errors_total[route] = self._errors_total.get(route, 0) + 1
+
+    def inc_llm_tier_denied_total(self, route: str, requested_tier: str, authorized_tier: str) -> None:
+        with self._lock:
+            key = (route, requested_tier, authorized_tier)
+            self._llm_tier_denied_total[key] = self._llm_tier_denied_total.get(key, 0) + 1
 
     def inc_rate_limit_hit(self) -> None:
         with self._lock:
@@ -64,7 +70,7 @@ class InMemoryMetrics:
                 if duration_seconds <= bound:
                     self._latency_buckets[route][bound] += 1
 
-    def snapshot(self) -> Dict[str, Dict[str, int]]:
+    def snapshot(self) -> Dict[str, object]:
         with self._lock:
             requests_total = dict(self._requests_total)
             errors_total = dict(self._errors_total)
@@ -79,9 +85,20 @@ class InMemoryMetrics:
                     "sum": self._latency_sum.get(route, 0.0),
                 }
 
+            llm_tier_denied_snapshot = [
+                {
+                    "route": route,
+                    "requested_tier": requested_tier,
+                    "authorized_tier": authorized_tier,
+                    "value": value,
+                }
+                for (route, requested_tier, authorized_tier), value in self._llm_tier_denied_total.items()
+            ]
+
             return {
                 "requests_total": requests_total,
                 "errors_total": errors_total,
+                "llm_tier_denied_total": llm_tier_denied_snapshot,
                 "rate_limit_hits_total": self._rate_limit_hits_total,
                 "mem_reads_total": self._mem_reads_total,
                 "mem_writes_total": self._mem_writes_total,

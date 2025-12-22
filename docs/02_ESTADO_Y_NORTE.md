@@ -110,7 +110,7 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Pipeline de audio con providers enchufables (stub por defecto, Azure seleccionable por ENV)
 - Azure Speech STT/TTS real disponible como opt-in local, con fallback automático a stub ante fallos
 - LLMProvider neutral consolidado: stub por defecto, proveedores reales activables por ENV (`LLM_PROVIDER`)
-- Selección freemium/premium modelada vía `context["llm_tier"]`, ahora alimentada desde la capa HTTP vía header opcional `x-munay-llm-tier` (`freemium`/`premium`, case-insensitive, default seguro `freemium` ante ausencia o valor inválido)
+- Selección freemium/premium modelada vía `context["llm_tier"]`, alimentada desde la capa HTTP vía header opcional `x-munay-llm-tier` (`freemium`/`premium`, case-insensitive). Header ausente → usa tier autorizado por API key. Header inválido → `400` con `X-Outcome-Detail=llm.tier_invalid`.
 - Tests unitarios de providers externos deterministas y aislados del entorno real:
   - No dependen de SDKs instalados ni credenciales reales.
   - Los errores de dependencia (p. ej. falta de SDK) se validan mediante mocks controlados.
@@ -127,7 +127,7 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Storage de sesiones sigue siendo in-memory sin endpoints HTTP de lectura/listado; expires_at/purge/enforcement se implementan como mínimo interno en esta orden.
 - Política de sesiones definida en `CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md` y aplicada como bloqueo para exponer lecturas/dashboards/persistencia hasta cumplir control de acceso y retención.
 - Política de tiers/costos LLM definida en `CONTRATO_NEUTRO_LLM_TIERS_COSTOS_V1.md`: la API-Key es la fuente de verdad, el header `x-munay-llm-tier` es solo `tier_solicitado` y no puede escalar privilegios.
-- Pendiente L2 de enforcement: `/audio` debe rechazar tiers superiores al autorizado por API-Key, devolver `X-Outcome-Detail=llm.tier_forbidden`/`llm.tier_invalid` cuando aplique e instrumentar una métrica de denegación de tier (p. ej. `llm_tier_denied_total`) + `errors_total{route="/audio"}` (agregado) y logs correlados.
+- Enforcement L2 implementado en `/audio`: si `tier_solicitado` > `tier_autorizado` responde `403` con `X-Outcome-Detail=llm.tier_forbidden`, incrementa `llm_tier_denied_total{route="/audio",requested_tier,authorized_tier}` y `errors_total{route="/audio"}`, y emite logs estructurados (logger `extra`) con `requested_tier`, `authorized_tier`, `api_key_id` y `corr_id`.
 
 ---
 

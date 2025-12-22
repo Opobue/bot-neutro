@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-22 – Implementación L2 enforcement tiers LLM en /audio
+
+- Se valida el header `x-munay-llm-tier` contra el tier autorizado por API key (`freemium|premium`), rechazando valores inválidos con `400` (`X-Outcome-Detail=llm.tier_invalid`).
+- Se bloquean escaladas de tier con `403` (`X-Outcome-Detail=llm.tier_forbidden`), incrementando `llm_tier_denied_total{route="/audio",requested_tier,authorized_tier}` y `errors_total{route="/audio"}` y emitiendo logs estructurados (logger `extra`) con `requested_tier`, `authorized_tier`, `api_key_id`, `corr_id`.
+- Se actualizan tests de enforcement y métricas, y se documenta el estado en el NORTE.
+
 ## 2024-12-19 – Hardening api_key_id derivado end-to-end
 
 - Se deriva `api_key_id` con SHA-256 truncado en `/audio` y `/audio/stats`, sin persistir secretos ni aceptar `X-API-Key-Id` de cliente.
