@@ -118,6 +118,7 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - Headers Munay (`x-munay-user-id`, `x-munay-context`) integrados
 - Métricas runtime (`METRICS`) activas
 - Rate-limit funcional por API key
+- api_key_id persistido en sesiones es derivado sha256[:12]; X-API-Key nunca se persiste
 - 100% de pruebas unitarias verdes
 - PRs recientes documentados en `HISTORIAL_PR.md`
 - Cliente oficial Munay v1 (dashboard web) implementado en `clients/munay-dashboard/`, alineado a `CONTRATO_CLIENTE_OFICIAL_MUNAY_V1.md` y `CLIENTE_OFICIAL_MUNAY_TECNICO_V1.md`, con registro en `docs/HISTORIAL_PR.md` (2025-12-21).
@@ -235,4 +236,3 @@ Cada nuevo hilo debe comenzar con este mensaje:
 
 ## 12. Mantenimiento
 Toda evolución del proyecto DEBE modificar este archivo.
-

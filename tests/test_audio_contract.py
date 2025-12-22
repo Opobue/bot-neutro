@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from bot_neutro.api import audio_session_repo, create_app
+from bot_neutro.security_ids import derive_api_key_id
 
 
 client = TestClient(create_app())
@@ -104,6 +105,7 @@ def test_audio_with_empty_file_returns_bad_request():
 def test_audio_happy_path_creates_audio_session_in_repository():
     repo = audio_session_repo
     repo.clear()
+    api_key_id = derive_api_key_id("test-key")
 
     response = client.post(
         "/audio",
@@ -117,13 +119,13 @@ def test_audio_happy_path_creates_audio_session_in_repository():
     session_id = data["session_id"]
 
     sessions = repo.list_by_api_key(
-        "test-key", limit=10, offset=0, api_key_id_autenticada="test-key"
+        api_key_id, limit=10, offset=0, api_key_id_autenticada=api_key_id
     )
     assert len(sessions) == 1
 
     session = sessions[0]
     assert session["id"] == session_id
-    assert session["api_key_id"] == "test-key"
+    assert session["api_key_id"] == api_key_id
     assert session["corr_id"] == "test-corr-id"
     assert session["transcript"] == "stub transcript"
     assert session["reply_text"] == "stub reply text"
@@ -142,6 +144,7 @@ def test_audio_happy_path_creates_audio_session_in_repository():
 def test_audio_with_munay_headers_populates_user_and_context_in_session():
     repo = audio_session_repo
     repo.clear()
+    api_key_id = derive_api_key_id("test-key")
 
     response = client.post(
         "/audio",
@@ -159,7 +162,7 @@ def test_audio_with_munay_headers_populates_user_and_context_in_session():
     session_id = data["session_id"]
 
     sessions = repo.list_by_api_key(
-        "test-key", limit=10, offset=0, api_key_id_autenticada="test-key"
+        api_key_id, limit=10, offset=0, api_key_id_autenticada=api_key_id
     )
     assert len(sessions) == 1
 
@@ -191,3 +194,26 @@ def test_audio_with_invalid_munay_context_returns_bad_request():
     assert response.headers.get("X-Outcome") == "error"
     assert response.headers.get("X-Outcome-Detail") == "audio.bad_request"
     assert response.headers.get("X-Correlation-Id")
+
+
+def test_audio_ignores_client_supplied_api_key_id():
+    repo = audio_session_repo
+    repo.clear()
+    api_key_id = derive_api_key_id("tenant-a")
+
+    response = client.post(
+        "/audio",
+        files={"audio_file": ("test.wav", b"fake audio", "audio/wav")},
+        headers={
+            "X-API-Key": "tenant-a",
+            "X-API-Key-Id": "spoofed-public",
+        },
+    )
+
+    assert response.status_code == 200
+
+    sessions = repo.list_by_api_key(
+        api_key_id, limit=10, offset=0, api_key_id_autenticada=api_key_id
+    )
+    assert len(sessions) == 1
+    assert sessions[0]["api_key_id"] == api_key_id
