@@ -94,6 +94,7 @@ def test_audio_rejects_invalid_tier_header(monkeypatch):
     )
 
     snapshot_before = METRICS.snapshot()
+    denied_before = _get_llm_tier_denied_count(snapshot_before, "gold", "freemium")
     errors_before = snapshot_before["errors_total"].get("/audio", 0)
 
     response = client.post(
@@ -112,6 +113,8 @@ def test_audio_rejects_invalid_tier_header(monkeypatch):
     assert response.json().get("detail") == "llm.tier_invalid"
 
     snapshot_after = METRICS.snapshot()
+    denied_after = _get_llm_tier_denied_count(snapshot_after, "gold", "freemium")
     errors_after = snapshot_after["errors_total"].get("/audio", 0)
 
+    assert denied_after == denied_before
     assert errors_after == errors_before + 1
