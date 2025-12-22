@@ -125,6 +125,7 @@ Cada nuevo hilo debe comenzar con este mensaje:
 - README actualizado para reflejar que `/audio` está implementado (antes indicaba stub 501) y documentar el payload real y modo stub por defecto con providers Azure/OpenAI opt-in.
 - Contratos públicos ajustados a error 400 cuando falta audio; el frontend puede mostrar validaciones 422 en la UI, pero el backend responde 400.
 - Storage de sesiones sigue siendo in-memory sin endpoints HTTP de lectura/listado; expires_at/purge/enforcement se implementan como mínimo interno en esta orden.
+- Contrato de Storage/Retención de sesiones definido (CONTRATO_NEUTRO_SESIONES_STORAGE_V1.md). Persistencia/lecturas siguen bloqueadas hasta L2.
 - Política de sesiones definida en `CONTRATO_NEUTRO_POLITICA_PRIVACIDAD_SESIONES.md` y aplicada como bloqueo para exponer lecturas/dashboards/persistencia hasta cumplir control de acceso y retención.
 - Política de tiers/costos LLM definida en `CONTRATO_NEUTRO_LLM_TIERS_COSTOS_V1.md`: la API-Key es la fuente de verdad, el header `x-munay-llm-tier` es solo `tier_solicitado` y no puede escalar privilegios.
 - Enforcement L2 implementado en `/audio`: si `tier_solicitado` > `tier_autorizado` responde `403` con `X-Outcome-Detail=llm.tier_forbidden`, incrementa `llm_tier_denied_total{route="/audio",requested_tier,authorized_tier}` y `errors_total{route="/audio"}`, y emite logs estructurados (logger `extra`) con `requested_tier`, `authorized_tier`, `api_key_id` y `corr_id`.
