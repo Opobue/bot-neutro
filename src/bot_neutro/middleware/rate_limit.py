@@ -8,6 +8,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from bot_neutro.metrics_runtime import METRICS
+from bot_neutro.security_ids import derive_api_key_id
 
 ALLOWLIST: Iterable[str] = {"/metrics", "/healthz", "/readyz", "/version"}
 
@@ -41,7 +42,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         window_seconds = int(os.getenv("RATE_LIMIT_AUDIO_WINDOW_SECONDS", "60"))
         max_requests = int(os.getenv("RATE_LIMIT_AUDIO_MAX_REQUESTS", "60"))
         now = time.time()
-        key = (path, api_key)
+        key = (path, derive_api_key_id(api_key))
 
         with self._lock:
             entry = self._state.get(key)

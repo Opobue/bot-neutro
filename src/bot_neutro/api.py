@@ -1,4 +1,3 @@
-import hashlib
 import os
 from uuid import uuid4
 from typing import Dict, Optional
@@ -18,6 +17,7 @@ from .middleware import (
 )
 from .metrics_runtime import METRICS
 from .providers.factory import build_llm_provider, build_stt_provider, build_tts_provider
+from .security_ids import derive_api_key_id
 
 
 METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
@@ -163,27 +163,30 @@ def create_app() -> FastAPI:
         return response
 
     @app.get("/audio/stats")
-    async def audio_stats(x_api_key: Optional[str] = Header(None, alias="X-API-Key")):
+    async def audio_stats(
+        request: Request, x_api_key: Optional[str] = Header(None, alias="X-API-Key")
+    ):
         """
         Stats agregados por tenant. NO expone sesiones ni PII.
         Cumple CONTRATO_NEUTRO_AUDIO_STATS_V1 + POLITICA_PRIVACIDAD_SESIONES.
         """
 
+        corr_id = request.headers.get("X-Correlation-Id") or str(uuid4())
         if not x_api_key:
             response = JSONResponse({"detail": "X-API-Key required"}, status_code=401)
             _with_outcome(response, outcome="error", detail="auth.missing_api_key")
+            response.headers.setdefault("X-Correlation-Id", corr_id)
             return response
 
         METRICS.inc_request("/audio/stats")
 
+        api_key_id = derive_api_key_id(x_api_key)
         sessions = audio_session_repo.list_by_api_key(
-            x_api_key,
+            api_key_id,
             limit=STATS_MAX_SESSIONS,
             offset=0,
-            api_key_id_autenticada=x_api_key,
+            api_key_id_autenticada=api_key_id,
         )
-
-        api_key_id = hashlib.sha256(x_api_key.encode("utf-8")).hexdigest()[:12]
 
         by_stt: Dict[str, int] = {}
         by_llm: Dict[str, int] = {}
@@ -210,6 +213,7 @@ def create_app() -> FastAPI:
 
         response = JSONResponse(payload)
         _with_outcome(response)
+        response.headers.setdefault("X-Correlation-Id", corr_id)
         return response
 
     ERROR_STATUS_MAPPING = {
@@ -239,7 +243,14 @@ def create_app() -> FastAPI:
         METRICS.inc_request("/audio")
 
         corr_id = request.headers.get("X-Correlation-Id") or str(uuid4())
-        api_key_id = request.headers.get("X-Api-Key-Id") or request.headers.get("X-API-Key")
+        api_key = request.headers.get("X-API-Key")
+        if not api_key:
+            METRICS.inc_error("/audio")
+            response = JSONResponse({"detail": "X-API-Key required"}, status_code=401)
+            _with_outcome(response, outcome="error", detail="auth.unauthorized")
+            response.headers.setdefault("X-Correlation-Id", corr_id)
+            return response
+        api_key_id = derive_api_key_id(api_key)
         munay_context = request.headers.get("x-munay-context")
 
         if munay_context and munay_context not in VALID_MUNAY_CONTEXTS:

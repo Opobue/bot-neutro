@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2024-12-19 – Hardening api_key_id derivado end-to-end
+
+- Se deriva `api_key_id` con SHA-256 truncado en `/audio` y `/audio/stats`, sin persistir secretos ni aceptar `X-API-Key-Id` de cliente.
+- `/audio/stats` filtra por el `api_key_id` derivado y mantiene respuesta agregada sin PII.
+- Rate limit usa el `api_key_id` derivado como clave interna.
+
 ## 2025-12-17 – Política de tiers/costos LLM por API-Key (contracts-first, docs-only)
 
 - Se crea `CONTRATO_NEUTRO_LLM_TIERS_COSTOS_V1.md` para definir los tiers permitidos (`freemium|premium`), las cuotas parametrizables y la regla de que la API-Key es la única fuente de verdad; el header `x-munay-llm-tier` es solo `tier_solicitado`.
