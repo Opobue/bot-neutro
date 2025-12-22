@@ -1,3 +1,4 @@
+import logging
 import os
 from uuid import uuid4
 from typing import Dict, Optional
@@ -15,6 +16,13 @@ from .middleware import (
     RateLimitMiddleware,
     RequestLatencyMiddleware,
 )
+from .llm_tiers import (
+    TierInvalidError,
+    effective_tier,
+    is_forbidden,
+    normalize_requested_tier,
+    resolve_authorized_tier,
+)
 from .metrics_runtime import METRICS
 from .providers.factory import build_llm_provider, build_stt_provider, build_tts_provider
 from .security_ids import derive_api_key_id
@@ -26,6 +34,8 @@ METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
 # TYPE sensei_rate_limit_hits_total counter
 # HELP errors_total Total errors seen by route
 # TYPE errors_total counter
+# HELP llm_tier_denied_total Total denied LLM tier requests
+# TYPE llm_tier_denied_total counter
 # HELP mem_reads_total Memory reads
 # TYPE mem_reads_total counter
 # HELP mem_writes_total Memory writes
@@ -66,6 +76,7 @@ audio_pipeline = AudioPipeline(
     tts_provider=build_tts_provider(),
     llm_provider=build_llm_provider(),
 )
+logger = logging.getLogger("bot_neutro")
 
 
 def create_app() -> FastAPI:
@@ -153,6 +164,13 @@ def create_app() -> FastAPI:
 
         for route, value in snapshot["errors_total"].items():
             dynamic_lines.append(f'errors_total{{route="{route}"}} {value}')
+
+        for item in snapshot.get("llm_tier_denied_total", []):
+            dynamic_lines.append(
+                "llm_tier_denied_total"
+                f'{{route="{item["route"]}",requested_tier="{item["requested_tier"]}",'
+                f'authorized_tier="{item["authorized_tier"]}"}} {item["value"]}'
+            )
 
         payload = METRICS_PAYLOAD + "\n".join(dynamic_lines)
         response = PlainTextResponse(
@@ -253,6 +271,39 @@ def create_app() -> FastAPI:
         api_key_id = derive_api_key_id(api_key)
         munay_context = request.headers.get("x-munay-context")
 
+        try:
+            requested_tier = normalize_requested_tier(x_munay_llm_tier)
+        except TierInvalidError:
+            METRICS.inc_error("/audio")
+            response = JSONResponse({"detail": "llm.tier_invalid"}, status_code=400)
+            _with_outcome(response, outcome="error", detail="llm.tier_invalid")
+            response.headers.setdefault("X-Correlation-Id", corr_id)
+            return response
+
+        authorized_tier = resolve_authorized_tier(api_key)
+
+        if is_forbidden(requested_tier, authorized_tier):
+            METRICS.inc_error("/audio")
+            METRICS.inc_llm_tier_denied_total(
+                "/audio",
+                requested_tier,
+                authorized_tier,
+            )
+            logger.info(
+                "llm_tier_denied",
+                extra={
+                    "event": "llm_tier_denied",
+                    "requested_tier": requested_tier,
+                    "authorized_tier": authorized_tier,
+                    "api_key_id": api_key_id,
+                    "corr_id": corr_id,
+                },
+            )
+            response = JSONResponse({"detail": "llm.tier_forbidden"}, status_code=403)
+            _with_outcome(response, outcome="error", detail="llm.tier_forbidden")
+            response.headers.setdefault("X-Correlation-Id", corr_id)
+            return response
+
         if munay_context and munay_context not in VALID_MUNAY_CONTEXTS:
             METRICS.inc_error("/audio")
             response = JSONResponse(
@@ -279,11 +330,7 @@ def create_app() -> FastAPI:
         if munay_context:
             client_meta["munay_context"] = munay_context
 
-        llm_tier: Optional[str] = None
-        if x_munay_llm_tier:
-            tier_normalized = x_munay_llm_tier.strip().lower()
-            if tier_normalized in {"freemium", "premium"}:
-                llm_tier = tier_normalized
+        llm_tier = effective_tier(requested_tier, authorized_tier)
 
         ctx: AudioRequestContext = {
             "corr_id": corr_id,
@@ -295,8 +342,7 @@ def create_app() -> FastAPI:
             "client_meta": client_meta or None,
         }
 
-        if llm_tier:
-            ctx["llm_tier"] = llm_tier
+        ctx["llm_tier"] = llm_tier
 
         result: AudioResponseContext | PipelineError = audio_pipeline.process(ctx)
 

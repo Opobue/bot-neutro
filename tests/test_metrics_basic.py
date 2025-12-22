@@ -20,6 +20,7 @@ def test_metrics_payload_includes_core_counters():
     assert "sensei_request_latency_seconds_bucket" in body
     assert "sensei_rate_limit_hits_total" in body
     assert "errors_total" in body
+    assert "llm_tier_denied_total" in body
     assert "mem_reads_total" in body
     assert "mem_writes_total" in body
     assert "sensei_requests_total" in body
