@@ -1,7 +1,7 @@
 # CONTRATO_NEUTRO_SESIONES_STORAGE_V1
 
 ## A) Meta
-**Propósito.** Definir el contrato formal para el almacenamiento, retención y acceso de sesiones de audio del endpoint `/audio`, cumpliendo la privacidad y el NORTE sin introducir cambios de runtime.
+**Propósito.** Definir el contrato formal para el almacenamiento, retención y acceso de sesiones de audio del endpoint `/audio`, cumpliendo la privacidad y el NORTE.
 
 **Alcance.** Una “sesión” es el registro lógico asociado a una ejecución de `/audio`, incluyendo identificadores, timestamps, estado y métricas de uso. Este contrato aplica a cualquier repositorio/almacenamiento que guarde sesiones y a cualquier futura lectura de las mismas.
 
@@ -105,14 +105,14 @@ Estas referencias deben existir en el repositorio y permanecer alineadas. Si alg
 ---
 
 ## H) Compatibilidad y migración
-- **Estado actual:** almacenamiento in-memory.
+- **Estado actual:** almacenamiento persistente local (archivo JSON) con TTL y purga interna.
 - **Futuro:** repositorio enchufable (interface) sin romper este contrato.
 - **Migración:** cualquier migración futura debe preservar los campos obligatorios, la derivación de `api_key_id` y las reglas de retención/acceso.
 
 ---
 
 ## I) Checklist de cumplimiento
-Antes de habilitar persistencia real o endpoints de lectura, una implementación L2 debe cumplir:
+Antes de habilitar endpoints de lectura/listado, una implementación L2 debe cumplir:
 1. `expires_at` obligatorio y cálculo por `AUDIO_SESSION_RETENTION_DAYS`.
 2. Purga interna conforme a `AUDIO_SESSION_PURGE_ENABLED`.
 3. `api_key_id` derivado desde `X-API-Key` (nunca aceptado del cliente).

@@ -1,5 +1,5 @@
 from bot_neutro.audio_pipeline import AudioPipeline
-from bot_neutro.audio_storage_inmemory import InMemoryAudioSessionRepository
+from bot_neutro.audio_storage import InMemoryAudioSessionRepository
 from bot_neutro.providers.interfaces import LLMProvider
 from bot_neutro.providers.azure import AzureSTTProvider, AzureTTSProvider, AzureSpeechConfig
 from bot_neutro.providers.stub import StubLLMProvider, StubSTTProvider, StubTTSProvider

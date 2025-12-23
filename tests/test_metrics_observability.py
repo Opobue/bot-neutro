@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi.testclient import TestClient
 
-from bot_neutro.api import audio_session_repo, create_app
+from bot_neutro.api import create_app
 from bot_neutro.metrics_runtime import METRICS
 
 
@@ -69,6 +69,8 @@ def test_mem_counters_cover_repository_reads_and_writes():
     mem_reads_before = snapshot_before["mem_reads_total"]
     mem_writes_before = snapshot_before["mem_writes_total"]
 
+    app = create_app()
+    audio_session_repo = app.state.audio_session_repo
     audio_session_repo.clear()
     session = {
         "id": "session-metric",

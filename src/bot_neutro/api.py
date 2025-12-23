@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from . import __version__
-from .audio_storage_inmemory import DEFAULT_AUDIO_SESSION_REPOSITORY
+from .audio_storage import get_default_audio_session_repository
 from .audio_pipeline import AudioPipeline, AudioRequestContext, AudioResponseContext, PipelineError
 from .middleware import (
     CorrelationIdMiddleware,
@@ -40,9 +40,9 @@ METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
 # TYPE mem_reads_total counter
 # HELP mem_writes_total Memory writes
 # TYPE mem_writes_total counter
-# HELP audio_sessions_purged_total Audio sessions purged from in-memory storage
+# HELP audio_sessions_purged_total Audio sessions purged from storage
 # TYPE audio_sessions_purged_total counter
-# HELP audio_sessions_current Current audio sessions stored in-memory
+# HELP audio_sessions_current Current audio sessions stored
 # TYPE audio_sessions_current gauge
 # HELP sensei_requests_total Total requests by route
 # TYPE sensei_requests_total counter
@@ -69,18 +69,18 @@ def _with_outcome(response, outcome: str = "ok", detail: str | None = None) -> N
         response.headers["X-Outcome-Detail"] = detail
 
 
-audio_session_repo = DEFAULT_AUDIO_SESSION_REPOSITORY
-audio_pipeline = AudioPipeline(
-    session_repo=audio_session_repo,
-    stt_provider=build_stt_provider(),
-    tts_provider=build_tts_provider(),
-    llm_provider=build_llm_provider(),
-)
 logger = logging.getLogger("bot_neutro")
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="bot-neutro", version=__version__)
+    app.state.audio_session_repo = get_default_audio_session_repository()
+    app.state.audio_pipeline = AudioPipeline(
+        session_repo=app.state.audio_session_repo,
+        stt_provider=build_stt_provider(),
+        tts_provider=build_tts_provider(),
+        llm_provider=build_llm_provider(),
+    )
 
     origins = [
         "http://localhost:5173",
@@ -199,7 +199,7 @@ def create_app() -> FastAPI:
         METRICS.inc_request("/audio/stats")
 
         api_key_id = derive_api_key_id(x_api_key)
-        sessions = audio_session_repo.list_by_api_key(
+        sessions = request.app.state.audio_session_repo.list_by_api_key(
             api_key_id,
             limit=STATS_MAX_SESSIONS,
             offset=0,
@@ -344,7 +344,7 @@ def create_app() -> FastAPI:
 
         ctx["llm_tier"] = llm_tier
 
-        result: AudioResponseContext | PipelineError = audio_pipeline.process(ctx)
+        result: AudioResponseContext | PipelineError = request.app.state.audio_pipeline.process(ctx)
 
         if "code" in result:
             status_code, detail_value = ERROR_STATUS_MAPPING.get(
@@ -384,4 +384,11 @@ def create_app() -> FastAPI:
     return app
 
 
-app = create_app()
+_APP: FastAPI | None = None
+
+
+def get_app() -> FastAPI:
+    global _APP
+    if _APP is None:
+        _APP = create_app()
+    return _APP

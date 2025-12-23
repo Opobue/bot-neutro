@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from bot_neutro.api import audio_session_repo, create_app
+from bot_neutro.api import create_app
 from bot_neutro.security_ids import derive_api_key_id
 
 
@@ -104,7 +104,7 @@ def test_audio_with_empty_file_returns_bad_request():
 
 
 def test_audio_happy_path_creates_audio_session_in_repository():
-    repo = audio_session_repo
+    repo = client.app.state.audio_session_repo
     repo.clear()
     api_key_id = derive_api_key_id("test-key")
 
@@ -128,8 +128,8 @@ def test_audio_happy_path_creates_audio_session_in_repository():
     assert session["id"] == session_id
     assert session["api_key_id"] == api_key_id
     assert session["corr_id"] == "test-corr-id"
-    assert session["transcript"] == "stub transcript"
-    assert session["reply_text"] == "stub reply text"
+    assert "transcript" not in session
+    assert "reply_text" not in session
     assert session["tts_available"] is True
     assert session["tts_storage_ref"] == "https://example.com/audio/stub.wav"
 
@@ -143,7 +143,7 @@ def test_audio_happy_path_creates_audio_session_in_repository():
 
 
 def test_audio_with_munay_headers_populates_user_and_context_in_session():
-    repo = audio_session_repo
+    repo = client.app.state.audio_session_repo
     repo.clear()
     api_key_id = derive_api_key_id("test-key")
 
@@ -174,6 +174,7 @@ def test_audio_with_munay_headers_populates_user_and_context_in_session():
 
     assert session["meta_tags"] is not None
     assert session["meta_tags"].get("context") == "diario_emocional"
+    assert session["client_meta"] == {"munay_context": "diario_emocional"}
 
 
 def test_audio_with_invalid_munay_context_returns_bad_request():
@@ -198,7 +199,7 @@ def test_audio_with_invalid_munay_context_returns_bad_request():
 
 
 def test_audio_ignores_client_supplied_api_key_id():
-    repo = audio_session_repo
+    repo = client.app.state.audio_session_repo
     repo.clear()
     api_key_id = derive_api_key_id("tenant-a")
 
