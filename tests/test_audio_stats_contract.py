@@ -3,7 +3,7 @@ import importlib
 from fastapi.testclient import TestClient
 
 from bot_neutro import api
-from bot_neutro.api import audio_session_repo, create_app
+from bot_neutro.api import create_app
 from bot_neutro.security_ids import derive_api_key_id
 
 
@@ -11,7 +11,7 @@ client = TestClient(create_app())
 
 
 def test_audio_stats_is_per_tenant_and_has_no_sensitive_fields():
-    audio_session_repo.clear()
+    client.app.state.audio_session_repo.clear()
 
     resp_a = client.post(
         "/audio",
@@ -57,7 +57,7 @@ def test_audio_stats_is_per_tenant_and_has_no_sensitive_fields():
 
 
 def test_audio_stats_requires_api_key_header():
-    audio_session_repo.clear()
+    client.app.state.audio_session_repo.clear()
 
     resp = client.get("/audio/stats")
     assert resp.status_code == 401
@@ -67,7 +67,7 @@ def test_audio_stats_requires_api_key_header():
 
 
 def test_audio_stats_ignores_client_supplied_public_id():
-    audio_session_repo.clear()
+    client.app.state.audio_session_repo.clear()
 
     resp = client.post(
         "/audio",
@@ -88,7 +88,7 @@ def test_audio_stats_ignores_client_supplied_public_id():
 
 
 def test_audio_stats_returns_derived_api_key_id_and_no_sessions():
-    audio_session_repo.clear()
+    client.app.state.audio_session_repo.clear()
 
     response = client.get("/audio/stats", headers={"X-API-Key": "test-key"})
     assert response.status_code == 200

@@ -2,10 +2,10 @@ import uuid
 from datetime import datetime
 from typing import Dict, Optional, TypedDict, Union
 
-from .audio_storage_inmemory import (
+from .audio_storage import (
     AudioSession,
-    DEFAULT_AUDIO_SESSION_REPOSITORY,
-    InMemoryAudioSessionRepository,
+    FileAudioSessionRepository,
+    get_default_audio_session_repository,
 )
 from .providers.interfaces import (
     LLMProvider,
@@ -61,7 +61,7 @@ class PipelineError(TypedDict):
 class AudioPipeline:
     def __init__(
         self,
-        session_repo: InMemoryAudioSessionRepository,
+        session_repo: FileAudioSessionRepository,
         stt_provider: STTProvider,
         tts_provider: TTSProvider,
         llm_provider: LLMProvider,
@@ -187,7 +187,21 @@ class AudioPipeline:
             "provider_stt": usage["provider_stt"],
             "provider_llm": usage["provider_llm"],
             "provider_tts": usage["provider_tts"],
+            "usage": {
+                "input_seconds": usage["input_seconds"],
+                "output_seconds": usage["output_seconds"],
+                "stt_ms": usage["stt_ms"],
+                "llm_ms": usage["llm_ms"],
+                "tts_ms": usage["tts_ms"],
+                "total_ms": usage["total_ms"],
+                "providers": {
+                    "stt": usage["provider_stt"],
+                    "llm": usage["provider_llm"],
+                    "tts": usage["provider_tts"],
+                },
+            },
             "meta_tags": {"context": munay_context} if munay_context else None,
+            "client_meta": client_metadata,
         }
 
         self._repository.create(session)
@@ -204,9 +218,9 @@ class AudioPipeline:
 
 
 class StubAudioPipeline(AudioPipeline):
-    def __init__(self, repository: InMemoryAudioSessionRepository | None = None) -> None:
+    def __init__(self, repository: FileAudioSessionRepository | None = None) -> None:
         super().__init__(
-            repository or DEFAULT_AUDIO_SESSION_REPOSITORY,
+            repository or get_default_audio_session_repository(),
             StubSTTProvider(),
             StubTTSProvider(),
             StubLLMProvider(),

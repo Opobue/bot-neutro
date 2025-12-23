@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-23 – Persistencia y retención L2 de sesiones `/audio`
+
+- Se reemplaza el storage in-memory por un repositorio persistente en disco con TTL y purga automática configurable.
+- Se incorporan flags para persistir `transcript`/`reply_text` con TTL máximo de 1 día y sanitización de `client_meta` sin PII.
+- Se amplían tests de retención, purga y métricas, y se actualiza el NORTE/ENV_VARS para reflejar la persistencia y el bloqueo de endpoints de lectura.
+
 ## 2025-12-22 – Contrato Storage & Retención de Sesiones (contracts-first)
 
 - Se crea `CONTRATO_NEUTRO_SESIONES_STORAGE_V1.md` definiendo modelo de datos, retención/TTL, control de acceso y observabilidad declarativa para sesiones de audio.
