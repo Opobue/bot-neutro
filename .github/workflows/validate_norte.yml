@@ -2,9 +2,9 @@ name: Validate NORTE and PR history
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   validate-norte:
@@ -70,4 +70,3 @@ jobs:
           else
             echo "No hay cambios en contratos NEUTRO/MUNAY ni en el NORTE; no se exige actualización de HISTORIAL_PR."
           fi
-
