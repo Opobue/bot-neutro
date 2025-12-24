@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-24 – CI/Workflows habilitados para develop
+
+- Se actualizaron los triggers de workflows guardianes para incluir `develop` junto a `main`.
+- Archivos: `.github/workflows/ci_tests.yml`, `.github/workflows/validate_norte.yml`.
+- Resultado CI: pendiente de ejecución en GitHub (local no ejecutado).
+
 ## 2025-12-23 – Persistencia y retención L2 de sesiones `/audio`
 
 - Se reemplaza el storage in-memory por un repositorio persistente en disco con TTL y purga automática configurable.
