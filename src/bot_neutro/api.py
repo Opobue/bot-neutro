@@ -60,7 +60,15 @@ def _parse_stats_max_sessions() -> int:
     return value
 
 
-STATS_MAX_SESSIONS = _parse_stats_max_sessions()
+
+def _parse_cors_origins() -> list[str]:
+    raw = os.getenv("MUNAY_CORS_ORIGINS", "")
+    if not raw:
+        return ["http://localhost:5173", "http://127.0.0.1:5173"]
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+CORS_ORIGINS = _parse_cors_origins()
 
 
 def _with_outcome(response, outcome: str = "ok", detail: str | None = None) -> None:
@@ -82,14 +90,10 @@ def create_app() -> FastAPI:
         llm_provider=build_llm_provider(),
     )
 
-    origins = [
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ]
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
+        allow_origins=CORS_ORIGINS,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -104,6 +108,22 @@ def create_app() -> FastAPI:
     async def set_default_outcome(request: Request, call_next):
         response = await call_next(request)
         response.headers.setdefault("X-Outcome", "ok")
+        return response
+
+    @app.exception_handler(Exception)
+    async def global_exception_handler(request: Request, exc: Exception):
+        corr_id = request.headers.get("X-Correlation-Id") or str(uuid4())
+        logger.exception(
+            "Unhandled exception",
+            exc_info=exc,
+            extra={"corr_id": corr_id}
+        )
+        response = JSONResponse(
+            {"detail": "Internal Server Error"},
+            status_code=500
+        )
+        _with_outcome(response, outcome="error", detail="internal_error")
+        response.headers["X-Correlation-Id"] = corr_id
         return response
 
     @app.get("/healthz")
