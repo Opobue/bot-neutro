@@ -28,7 +28,7 @@ def test_exception_handler_headers():
     def fail_endpoint():
         raise RuntimeError("Oops, catastrophic failure")
 
-    client = TestClient(app)
+    client = TestClient(app, raise_server_exceptions=False)
     
     # 3. Request
     cid_input = "test-correlation-123"
