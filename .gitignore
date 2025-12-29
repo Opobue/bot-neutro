@@ -212,4 +212,12 @@ set_env_azure_speech.ps1
 # Audios WAV locales de prueba (grabaciones manuales del dev)
 *.wav
 
+# Repomix context files
+repomix-output.xml
+repomix-output.txt
+
+# Temporary audit and terminal files
+audit.patch
+cls
+
 
