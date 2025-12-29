@@ -5,6 +5,7 @@
 
 ## 2025-12-28 – Hardening de API: Errores 500, CORS configurable y optimización de CI
 
+- FIX: Restauración de la constante STATS_MAX_SESSIONS eliminada accidentalmente durante el hardening de CORS.
 - Se implementó un manejador global de excepciones en `api.py` para asegurar que los errores 500 devuelvan JSON con headers de contrato (`X-Outcome`, `X-Correlation-Id`).
 - Se hizo configurable la lista de orígenes CORS mediante la variable de entorno `MUNAY_CORS_ORIGINS`.
 - Se optimizó el workflow de CI (`ci_tests.yml`) eliminando la ejecución redundante de pytest.

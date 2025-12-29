@@ -60,6 +60,7 @@ def _parse_stats_max_sessions() -> int:
     return value
 
 
+STATS_MAX_SESSIONS = _parse_stats_max_sessions()
 
 def _parse_cors_origins() -> list[str]:
     raw = os.getenv("MUNAY_CORS_ORIGINS", "")

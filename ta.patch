@@ -1,0 +1,12 @@
+[1mdiff --git a/docs/HISTORIAL_PR.md b/docs/HISTORIAL_PR.md[m
+[1mindex 9862eb2..c789b91 100644[m
+[1m--- a/docs/HISTORIAL_PR.md[m
+[1m+++ b/docs/HISTORIAL_PR.md[m
+[36m@@ -7,0 +8 @@[m
+[32m+[m[32m- FIX: Restauración de la constante STATS_MAX_SESSIONS eliminada accidentalmente durante el hardening de CORS.[m
+[1mdiff --git a/src/bot_neutro/api.py b/src/bot_neutro/api.py[m
+[1mindex 88bec04..11888cd 100644[m
+[1m--- a/src/bot_neutro/api.py[m
+[1m+++ b/src/bot_neutro/api.py[m
+[36m@@ -62,0 +63 @@[m [mdef _parse_stats_max_sessions() -> int:[m
+[32m+[m[32mSTATS_MAX_SESSIONS = _parse_stats_max_sessions()[m
