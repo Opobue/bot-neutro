@@ -3,6 +3,15 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-28 – Hardening de API: Errores 500, CORS configurable y optimización de CI
+
+- FIX: Restauración de la constante STATS_MAX_SESSIONS eliminada accidentalmente durante el hardening de CORS.
+- FIX: Sincronización de nombres de Jobs en CI para resolver bloqueo de Branch Protection.
+- Se implementó un manejador global de excepciones en `api.py` para asegurar que los errores 500 devuelvan JSON con headers de contrato (`X-Outcome`, `X-Correlation-Id`).
+- Se hizo configurable la lista de orígenes CORS mediante la variable de entorno `MUNAY_CORS_ORIGINS`.
+- Se optimizó el workflow de CI (`ci_tests.yml`) eliminando la ejecución redundante de pytest.
+- Se añadieron tests de regresión (`tests/test_api_hardening.py`) para validar el comportamiento de los headers en errores 500 y la configuración de CORS.
+
 ## 2025-12-24 – CI/Workflows habilitados para develop
 
 - Se actualizaron los triggers de workflows guardianes para incluir `develop` junto a `main`.
