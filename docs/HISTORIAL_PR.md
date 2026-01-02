@@ -3,6 +3,15 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-03 – Bootstrap reproducible para ejecutores (Codex)
+
+- Se documenta un bootstrap reproducible (deps + comandos CI) en `CONTRATO_NEUTRO_CONTRIBUCION.md`.
+- Se agrega `scripts/bootstrap_codex.ps1` para crear `.venv`, instalar deps y ejecutar checks CI.
+- Contratos habilitantes citados:
+  - `CONTRATO_NEUTRO_CONTRIBUCION.md` (pytest y cobertura ≥80 %).
+  - `CONTRATO_INFRAESTRUCTURA_GITHUB.md` (Ruff, Mypy y Pytest en CI).
+  - `CONTRATO_SKB_GOBERNANZA.md` (protocolo D→D→C, no mezclar fases).
+
 ## 2026-01-02 – Alineación contrato /audio con headers vanguardia (Outcome-Detail solo en error)
 
 - Motivo: Alineación contrato /audio con headers vanguardia (Outcome-Detail solo en error).
