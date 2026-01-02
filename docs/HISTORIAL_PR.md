@@ -3,6 +3,18 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-02 – Alineación contrato /audio con headers vanguardia (Outcome-Detail solo en error)
+
+- Motivo: Alineación contrato /audio con headers vanguardia (Outcome-Detail solo en error).
+- Sin cambios runtime; sincronización contrato ↔ runtime (docs-only).
+- Archivos tocados:
+  - `docs/CONTRATO_NEUTRO_AUDIO_PIPELINE.md`
+  - `.gitignore`
+- Contratos habilitantes citados:
+  - `CONTRATO_NEUTRO_HEADERS.md` (X-Outcome ok en 2xx y Outcome-Detail solo en error).
+  - `CONTRATO_SKB_GOBERNANZA.md` (protocolo D→D→C, no mezclar fases).
+  - `02_ESTADO_Y_NORTE.md` (NORTE v2.1: UI como contrato).
+
 ## 2026-01-02 – Refactor API: separar create_app y aplicar contrato de headers
 
 - Se reestructura `src/bot_neutro/api.py` para aislar `create_app()` como constructor explícito de la aplicación y mantener el helper `_with_outcome` dedicado a headers.
