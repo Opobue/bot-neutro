@@ -3,6 +3,10 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2025-12-30 – Blindaje de Vanguardia: Implementación de Ruff, Mypy y Contrato de Infraestructura de GitHub.
+
+- 2025-12-30 – Blindaje de Vanguardia: Implementación de Ruff, Mypy y Contrato de Infraestructura de GitHub.
+
 ## 2025-12-28 – Hardening de API: Errores 500, CORS configurable y optimización de CI
 
 - FIX: Restauración de la constante STATS_MAX_SESSIONS eliminada accidentalmente durante el hardening de CORS.

@@ -26,3 +26,14 @@ markers = [
     "azure_integration: optional Azure Speech integration tests",
     "llm_integration: optional OpenAI LLM integration tests",
 ]
+
+[tool.ruff]
+select = ["E", "F", "B", "I"] # Errores, Flakes, Bugbear, Isort
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
