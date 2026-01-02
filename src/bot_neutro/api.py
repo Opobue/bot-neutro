@@ -401,7 +401,7 @@ def create_app() -> FastAPI:
                 "meta": res.get("meta"),
             }
             response = JSONResponse(body, status_code=200)
-            _with_outcome(response, outcome="success")
+            _with_outcome(response, outcome="ok")
 
         response.headers.setdefault("X-Correlation-Id", corr_id)
         return response
