@@ -3,6 +3,19 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-02 – Corrección de análisis estático y pruebas de preservación de constantes
+
+- Se agregan pruebas de regresión para blindar constantes globales de contrato:
+  - `STATS_MAX_SESSIONS` en `src/bot_neutro/api.py`.
+  - `TIER_FREEMIUM`, `TIER_PREMIUM`, `TIERS`, `TIER_ORDER` en `src/bot_neutro/llm_tiers.py`.
+  - `METRICS` en `src/bot_neutro/metrics_runtime.py`.
+- Se valida el cumplimiento de análisis estático y cobertura conforme a los contratos habilitantes.
+- Contratos habilitantes citados:
+  - `CONTRATO_INFRAESTRUCTURA_GITHUB.md` (Ruff, Mypy y Pytest en CI).
+  - `CONTRATO_NEUTRO_CONTRIBUCION.md` (pytest y cobertura ≥80 %).
+  - `CONTRATO_SKB_GOBERNANZA.md` (protocolo D→D→C).
+  - `NORTE v2.1` (SLOs y UI como contrato).
+
 ## 2025-12-30 – Blindaje de Vanguardia: Implementación de Ruff, Mypy y Contrato de Infraestructura de GitHub.
 
 - 2025-12-30 – Blindaje de Vanguardia: Implementación de Ruff, Mypy y Contrato de Infraestructura de GitHub.
