@@ -26,3 +26,20 @@ markers = [
     "azure_integration: optional Azure Speech integration tests",
     "llm_integration: optional OpenAI LLM integration tests",
 ]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I"] # Errores, Flakes, Bugbear, Isort
+
+[tool.ruff.lint.per-file-ignores]
+"src/bot_neutro/api.py" = ["B008"]
+
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
+disallow_untyped_defs = true

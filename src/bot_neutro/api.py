@@ -1,21 +1,15 @@
 import logging
 import os
+from typing import Any, Awaitable, Callable, Dict, Optional, cast
 from uuid import uuid4
-from typing import Dict, Optional
 
 from fastapi import FastAPI, File, Form, Header, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, PlainTextResponse, Response
 
 from . import __version__
-from .audio_storage import get_default_audio_session_repository
 from .audio_pipeline import AudioPipeline, AudioRequestContext, AudioResponseContext, PipelineError
-from .middleware import (
-    CorrelationIdMiddleware,
-    JSONLoggingMiddleware,
-    RateLimitMiddleware,
-    RequestLatencyMiddleware,
-)
+from .audio_storage import get_default_audio_session_repository
 from .llm_tiers import (
     TierInvalidError,
     effective_tier,
@@ -24,9 +18,14 @@ from .llm_tiers import (
     resolve_authorized_tier,
 )
 from .metrics_runtime import METRICS
+from .middleware import (
+    CorrelationIdMiddleware,
+    JSONLoggingMiddleware,
+    RateLimitMiddleware,
+    RequestLatencyMiddleware,
+)
 from .providers.factory import build_llm_provider, build_stt_provider, build_tts_provider
 from .security_ids import derive_api_key_id
-
 
 METRICS_PAYLOAD = """# HELP sensei_request_latency_seconds Request latency
 # TYPE sensei_request_latency_seconds histogram
@@ -72,7 +71,7 @@ def _parse_cors_origins() -> list[str]:
 CORS_ORIGINS = _parse_cors_origins()
 
 
-def _with_outcome(response, outcome: str = "ok", detail: str | None = None) -> None:
+def _with_outcome(response: Response, outcome: str = "ok", detail: str | None = None) -> None:
     response.headers.setdefault("X-Outcome", outcome)
     if detail:
         response.headers["X-Outcome-Detail"] = detail
@@ -106,13 +105,15 @@ def create_app() -> FastAPI:
     app.add_middleware(JSONLoggingMiddleware)
 
     @app.middleware("http")
-    async def set_default_outcome(request: Request, call_next):
+    async def set_default_outcome(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         response = await call_next(request)
         response.headers.setdefault("X-Outcome", "ok")
         return response
 
     @app.exception_handler(Exception)
-    async def global_exception_handler(request: Request, exc: Exception):
+    async def global_exception_handler(request: Request, exc: Exception) -> Response:
         corr_id = request.headers.get("X-Correlation-Id") or str(uuid4())
         logger.exception(
             "Unhandled exception",
@@ -128,28 +129,28 @@ def create_app() -> FastAPI:
         return response
 
     @app.get("/healthz")
-    async def healthcheck(request: Request):
+    async def healthcheck(request: Request) -> JSONResponse:
         METRICS.inc_request("/healthz")
         response = JSONResponse({"status": "ok"})
         _with_outcome(response)
         return response
 
     @app.get("/readyz")
-    async def readiness(request: Request):
+    async def readiness(request: Request) -> JSONResponse:
         METRICS.inc_request("/readyz")
         response = JSONResponse({"status": "ok"})
         _with_outcome(response)
         return response
 
     @app.get("/version")
-    async def version(request: Request):
+    async def version(request: Request) -> JSONResponse:
         METRICS.inc_request("/version")
         response = JSONResponse({"version": __version__})
         _with_outcome(response)
         return response
 
     @app.get("/metrics")
-    async def metrics(request: Request):
+    async def metrics(request: Request) -> PlainTextResponse:
         METRICS.inc_request("/metrics")
         snapshot = METRICS.snapshot()
         dynamic_lines = []
@@ -159,7 +160,8 @@ def create_app() -> FastAPI:
                 bound_label = "+Inf" if bound == float("inf") else str(bound)
                 value = latency["buckets"].get(bound, 0)
                 dynamic_lines.append(
-                    f'sensei_request_latency_seconds_bucket{{route="{route}",le="{bound_label}"}} {value}'
+                    f'sensei_request_latency_seconds_bucket{{route="{route}",'
+                    f'le="{bound_label}"}} {value}'
                 )
             dynamic_lines.append(
                 f'sensei_request_latency_seconds_count{{route="{route}"}} {latency["count"]}'
@@ -204,7 +206,7 @@ def create_app() -> FastAPI:
     @app.get("/audio/stats")
     async def audio_stats(
         request: Request, x_api_key: Optional[str] = Header(None, alias="X-API-Key")
-    ):
+    ) -> JSONResponse:
         """
         Stats agregados por tenant. NO expone sesiones ni PII.
         Cumple CONTRATO_NEUTRO_AUDIO_STATS_V1 + POLITICA_PRIVACIDAD_SESIONES.
@@ -278,7 +280,7 @@ def create_app() -> FastAPI:
         x_munay_llm_tier: Optional[str] = Header(
             default=None, alias="x-munay-llm-tier"
         ),
-    ):
+    ) -> Response:
         METRICS.inc_request("/audio")
 
         corr_id = request.headers.get("X-Correlation-Id") or str(uuid4())
@@ -367,34 +369,36 @@ def create_app() -> FastAPI:
 
         result: AudioResponseContext | PipelineError = request.app.state.audio_pipeline.process(ctx)
 
-        if "code" in result:
+        if "code" in cast(Dict[str, Any], result):
+            err = cast(PipelineError, result)
             status_code, detail_value = ERROR_STATUS_MAPPING.get(
-                result["code"], (500, "audio.internal_error")
+                err["code"], (500, "audio.internal_error")
             )
             METRICS.inc_error("/audio")
             response = JSONResponse(
-                {"detail": result.get("message")}, status_code=status_code
+                {"detail": err.get("message")}, status_code=status_code
             )
             _with_outcome(response, outcome="error", detail=detail_value)
         else:
+            res = cast(AudioResponseContext, result)
             body = {
-                "session_id": result.get("session_id"),
-                "corr_id": result.get("corr_id") or corr_id,
-                "transcript": result["transcript"],
-                "reply_text": result["reply_text"],
-                "tts_url": result.get("tts_url"),
+                "session_id": res.get("session_id"),
+                "corr_id": res.get("corr_id") or corr_id,
+                "transcript": res["transcript"],
+                "reply_text": res["reply_text"],
+                "tts_url": res.get("tts_url"),
                 "usage": {
-                    "input_seconds": result["usage"]["input_seconds"],
-                    "output_seconds": result["usage"]["output_seconds"],
-                    "stt_ms": result["usage"]["stt_ms"],
-                    "llm_ms": result["usage"]["llm_ms"],
-                    "tts_ms": result["usage"]["tts_ms"],
-                    "total_ms": result["usage"]["total_ms"],
-                    "provider_stt": result["usage"]["provider_stt"],
-                    "provider_llm": result["usage"]["provider_llm"],
-                    "provider_tts": result["usage"]["provider_tts"],
+                    "input_seconds": res["usage"]["input_seconds"],
+                    "output_seconds": res["usage"]["output_seconds"],
+                    "stt_ms": res["usage"]["stt_ms"],
+                    "llm_ms": res["usage"]["llm_ms"],
+                    "tts_ms": res["usage"]["tts_ms"],
+                    "total_ms": res["usage"]["total_ms"],
+                    "provider_stt": res["usage"]["provider_stt"],
+                    "provider_llm": res["usage"]["provider_llm"],
+                    "provider_tts": res["usage"]["provider_tts"],
                 },
-                "meta": result.get("meta"),
+                "meta": res.get("meta"),
             }
             response = JSONResponse(body, status_code=200)
             _with_outcome(response, outcome="success", detail="audio_processed")

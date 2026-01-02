@@ -1,11 +1,10 @@
 import json
 import urllib.parse
-from types import SimpleNamespace
 from typing import Any, Iterable, List, Tuple
 from uuid import uuid4
 
-from ._client import USE_CLIENT_DEFAULT
 from . import _types
+from ._client import USE_CLIENT_DEFAULT
 
 
 class Headers:
@@ -67,7 +66,13 @@ class URL:
 
 
 class Request:
-    def __init__(self, method: str, url: str, headers: Headers | None = None, content: bytes | str | None = None) -> None:
+    def __init__(
+        self,
+        method: str,
+        url: str,
+        headers: Headers | None = None,
+        content: bytes | str | None = None,
+    ) -> None:
         self.method = method.upper()
         self.url = URL(url)
         self.headers = headers or Headers()
@@ -88,9 +93,19 @@ class ByteStream:
 
 
 class Response:
-    def __init__(self, status_code: int, headers: Iterable[Tuple[str, str]] | dict[str, str], stream: ByteStream, request: Request) -> None:
+    def __init__(
+        self,
+        status_code: int,
+        headers: Iterable[Tuple[str, str]] | dict[str, str],
+        stream: ByteStream,
+        request: Request,
+    ) -> None:
         self.status_code = status_code
-        self.headers = Headers(headers if not isinstance(headers, Headers) else dict(headers.items()))
+        if isinstance(headers, Headers):
+            initial_headers = dict(headers.items())
+        else:
+            initial_headers = headers
+        self.headers = Headers(initial_headers)
         self._stream = stream
         self.content = stream.read()
         self.request = request
@@ -126,7 +141,9 @@ class Client:
             return url
         return urllib.parse.urljoin(self.base_url, url)
 
-    def _encode_multipart(self, data: dict[str, str] | None, files: dict[str, tuple[str, bytes, str]] | None) -> tuple[bytes, str]:
+    def _encode_multipart(
+        self, data: dict[str, str] | None, files: dict[str, tuple[str, bytes, str]] | None
+    ) -> tuple[bytes, str]:
         boundary = uuid4().hex
         lines: list[bytes] = []
         for key, value in (data or {}).items():
@@ -138,7 +155,9 @@ class Client:
         for key, file_tuple in (files or {}).items():
             filename, file_content, content_type = file_tuple
             lines.append(f"--{boundary}".encode())
-            disposition = f'Content-Disposition: form-data; name="{key}"; filename="{filename}"'
+            disposition = (
+                f'Content-Disposition: form-data; name="{key}"; filename="{filename}"'
+            )
             lines.append(disposition.encode())
             lines.append(f"Content-Type: {content_type}".encode())
             lines.append(b"")
@@ -172,7 +191,9 @@ class Client:
             query_dict = dict(urllib.parse.parse_qsl(parsed.query))
             query_dict.update(params)
             query_string = urllib.parse.urlencode(query_dict)
-            merged_url = urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path, query_string, ""))
+            merged_url = urllib.parse.urlunsplit(
+                (parsed.scheme, parsed.netloc, parsed.path, query_string, "")
+            )
 
         request_headers = Headers(dict(self.headers.items()))
         if headers:

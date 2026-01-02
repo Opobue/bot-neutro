@@ -9,13 +9,12 @@ cuando se usa el modo stub.
 
 from __future__ import annotations
 
-import os
 import logging
+import os
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from .interfaces import LLMProvider, STTProvider, STTResult, TTSProvider, TTSResult
-
 
 logger = logging.getLogger("bot_neutro")
 
@@ -42,7 +41,7 @@ class AzureSTTProvider(STTProvider):
         self._fallback = fallback
 
     @staticmethod
-    def _require_sdk():
+    def _require_sdk() -> Any:
         """Carga perezosa del SDK de Azure.
 
         Se invoca tanto en `from_env` (para fail-fast de dependencias) como en
@@ -50,7 +49,7 @@ class AzureSTTProvider(STTProvider):
         ocultar errores genuinos.
         """
 
-        import azure.cognitiveservices.speech as speechsdk  # type: ignore
+        import azure.cognitiveservices.speech as speechsdk
 
         return speechsdk
 
@@ -62,12 +61,17 @@ class AzureSTTProvider(STTProvider):
         voice_default = os.getenv("AZURE_SPEECH_TTS_VOICE_DEFAULT", "")
 
         if not key or not region:
-            raise ValueError("Missing Azure Speech credentials: AZURE_SPEECH_KEY/AZURE_SPEECH_REGION")
+            raise ValueError(
+                "Missing Azure Speech credentials: AZURE_SPEECH_KEY/AZURE_SPEECH_REGION"
+            )
 
         try:
             cls._require_sdk()
         except ImportError as exc:
-            raise ValueError("Azure Speech SDK is required for Azure providers (pip install azure-cognitiveservices-speech)") from exc
+            raise ValueError(
+                "Azure Speech SDK is required for Azure providers "
+                "(pip install azure-cognitiveservices-speech)"
+            ) from exc
 
         return cls(
             AzureSpeechConfig(
@@ -82,7 +86,9 @@ class AzureSTTProvider(STTProvider):
     def _transcribe_with_sdk(self, audio_bytes: bytes, locale: str) -> STTResult:
         speechsdk = self._require_sdk()
 
-        speech_config = speechsdk.SpeechConfig(subscription=self._config.key, region=self._config.region)
+        speech_config = speechsdk.SpeechConfig(
+            subscription=self._config.key, region=self._config.region
+        )
         speech_config.speech_recognition_language = locale or self._config.stt_language_default
 
         stream = speechsdk.audio.PushAudioInputStream()
@@ -90,7 +96,9 @@ class AzureSTTProvider(STTProvider):
         stream.close()
 
         audio_config = speechsdk.audio.AudioConfig(stream=stream)
-        recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
+        recognizer = speechsdk.SpeechRecognizer(
+            speech_config=speech_config, audio_config=audio_config
+        )
         result = recognizer.recognize_once()
 
         if result.reason == speechsdk.ResultReason.RecognizedSpeech:
@@ -98,7 +106,11 @@ class AzureSTTProvider(STTProvider):
                 "text": result.text,
                 "reason": getattr(result.reason, "name", str(result.reason)),
             }
-            return STTResult(text=result.text, provider_id=self.provider_id, raw_transcript=raw_transcript)
+            return STTResult(
+                text=result.text,
+                provider_id=self.provider_id,
+                raw_transcript=raw_transcript,
+            )
 
         if result.reason == speechsdk.ResultReason.NoMatch:
             logger.warning(
@@ -161,8 +173,8 @@ class AzureTTSProvider(TTSProvider):
         self._fallback = fallback
 
     @staticmethod
-    def _require_sdk():
-        import azure.cognitiveservices.speech as speechsdk  # type: ignore
+    def _require_sdk() -> Any:
+        import azure.cognitiveservices.speech as speechsdk
 
         return speechsdk
 
@@ -174,12 +186,17 @@ class AzureTTSProvider(TTSProvider):
         voice_default = os.getenv("AZURE_SPEECH_TTS_VOICE_DEFAULT", "es-ES-AlonsoNeural")
 
         if not key or not region:
-            raise ValueError("Missing Azure Speech credentials: AZURE_SPEECH_KEY/AZURE_SPEECH_REGION")
+            raise ValueError(
+                "Missing Azure Speech credentials: AZURE_SPEECH_KEY/AZURE_SPEECH_REGION"
+            )
 
         try:
             cls._require_sdk()
         except ImportError as exc:
-            raise ValueError("Azure Speech SDK is required for Azure providers (pip install azure-cognitiveservices-speech)") from exc
+            raise ValueError(
+                "Azure Speech SDK is required for Azure providers "
+                "(pip install azure-cognitiveservices-speech)"
+            ) from exc
 
         return cls(
             AzureSpeechConfig(
@@ -194,7 +211,9 @@ class AzureTTSProvider(TTSProvider):
     def _synthesize_with_sdk(self, text: str, locale: str, voice: str | None = None) -> TTSResult:
         speechsdk = self._require_sdk()
 
-        speech_config = speechsdk.SpeechConfig(subscription=self._config.key, region=self._config.region)
+        speech_config = speechsdk.SpeechConfig(
+            subscription=self._config.key, region=self._config.region
+        )
         speech_config.speech_synthesis_language = locale or self._config.stt_language_default
         speech_config.speech_synthesis_voice_name = voice or self._config.tts_voice_default
 
@@ -256,8 +275,14 @@ class AzureLLMProvider(LLMProvider):  # pragma: no cover - placeholder
     provider_id = "azure-llm"
     latency_ms = 0
 
-    def generate_reply(self, transcript: str, context: dict) -> str:
+    def generate_reply(self, transcript: str, context: Dict[str, Any]) -> str:
         raise NotImplementedError("Azure LLM integration pending")
 
 
-__all__ = ["AzureSTTProvider", "AzureTTSProvider", "AzureLLMProvider", "AzureSpeechConfig", "AzureProviderError"]
+__all__ = [
+    "AzureSTTProvider",
+    "AzureTTSProvider",
+    "AzureLLMProvider",
+    "AzureSpeechConfig",
+    "AzureProviderError",
+]

@@ -3,7 +3,6 @@ import sys
 from textwrap import dedent
 
 
-
 def _run_validator(path: str) -> subprocess.CompletedProcess:
     return subprocess.run(
         [sys.executable, "scripts/kaizen_validate_order.py", path],

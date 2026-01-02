@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, TypedDict
+from typing import Dict, List, Optional, TypedDict, cast
 
 from .metrics_runtime import METRICS
 
@@ -114,7 +114,7 @@ class FileAudioSessionRepository:
         self._track_session_metrics = track_session_metrics
         self._storage_path = Path(
             storage_path
-            or os.getenv("AUDIO_SESSION_STORAGE_PATH", "/tmp/bot_neutro_audio_sessions.json")
+            or str(os.getenv("AUDIO_SESSION_STORAGE_PATH", "/tmp/bot_neutro_audio_sessions.json"))
         )
         self._load_from_disk()
         if self._purge_enabled:
@@ -141,7 +141,7 @@ class FileAudioSessionRepository:
             expires_at = min(expires_at, created_at + timedelta(days=1))
 
         session_id = session.get("id") or session.get("session_id") or ""
-        stored: AudioSession = dict(session)
+        stored = cast(AudioSession, dict(session))
         stored["id"] = session_id
         stored["session_id"] = session_id
         stored["created_at"] = created_at
@@ -262,7 +262,7 @@ class FileAudioSessionRepository:
                     item["expires_at"] = datetime.fromisoformat(expires_at)
                 except ValueError:
                     continue
-            items.append(item)
+            items.append(cast(AudioSession, item))
         self._items = items
         if self._track_session_metrics:
             METRICS.set_audio_sessions_current(len(self._items))
@@ -275,7 +275,7 @@ class FileAudioSessionRepository:
             payload["created_at"] = created_at.isoformat()
         if isinstance(expires_at, datetime):
             payload["expires_at"] = expires_at.isoformat()
-        return payload
+        return cast(AudioSession, payload)
 
     def _persist(self) -> None:
         try:
@@ -302,7 +302,7 @@ class InMemoryAudioSessionRepository(FileAudioSessionRepository):
         self._persist_transcript = _parse_flag("AUDIO_SESSION_PERSIST_TRANSCRIPT", "0")
         self._persist_reply_text = _parse_flag("AUDIO_SESSION_PERSIST_REPLY_TEXT", "0")
         self._track_session_metrics = track_session_metrics
-        self._storage_path: Optional[Path] = None
+        self._storage_path: Path = Path("")
         if self._track_session_metrics:
             METRICS.set_audio_sessions_current(0)
 

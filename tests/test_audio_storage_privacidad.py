@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
 import importlib
 import sys
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -12,7 +12,12 @@ from bot_neutro.audio_storage import (
 from bot_neutro.metrics_runtime import METRICS
 
 
-def _build_session(session_id: str, api_key_id: str, user_external_id: str | None = None, created_at: datetime | None = None):
+def _build_session(
+    session_id: str,
+    api_key_id: str,
+    user_external_id: str | None = None,
+    created_at: datetime | None = None,
+):
     return {
         "id": session_id,
         "corr_id": f"corr-{session_id}",
@@ -48,7 +53,9 @@ def test_create_calculates_expires_at_with_default_retention():
 
     assert "expires_at" in stored
     assert stored["expires_at"] > stored["created_at"]
-    assert abs((stored["expires_at"] - created) - timedelta(days=30)) <= timedelta(seconds=2)
+    assert abs((stored["expires_at"] - created) - timedelta(days=30)) <= timedelta(
+        seconds=2
+    )
 
 
 def test_purge_removes_expired_before_listing():
@@ -58,18 +65,26 @@ def test_purge_removes_expired_before_listing():
     expired_created_at = datetime.utcnow() - timedelta(days=40)
     active_created_at = datetime.utcnow()
 
-    expired = _build_session("s-expired", api_key_id="k1", user_external_id="u1", created_at=expired_created_at)
-    active = _build_session("s-active", api_key_id="k1", user_external_id="u1", created_at=active_created_at)
+    expired = _build_session(
+        "s-expired", api_key_id="k1", user_external_id="u1", created_at=expired_created_at
+    )
+    active = _build_session(
+        "s-active", api_key_id="k1", user_external_id="u1", created_at=active_created_at
+    )
 
     repo.create(expired)
     repo.create(active)
 
-    sessions = repo.list_by_api_key("k1", limit=10, offset=0, api_key_id_autenticada="k1")
+    sessions = repo.list_by_api_key(
+        "k1", limit=10, offset=0, api_key_id_autenticada="k1"
+    )
 
     assert len(sessions) == 1
     assert sessions[0]["id"] == "s-active"
 
-    sessions_by_user = repo.list_by_user("u1", limit=10, offset=0, api_key_id_autenticada="k1")
+    sessions_by_user = repo.list_by_user(
+        "u1", limit=10, offset=0, api_key_id_autenticada="k1"
+    )
     assert len(sessions_by_user) == 1
     assert sessions_by_user[0]["id"] == "s-active"
 
@@ -104,7 +119,9 @@ def test_retention_env_invalid_falls_back_and_clamps(monkeypatch):
 
     stored = repo.create(_build_session("s-invalid", api_key_id="k1"))
 
-    assert abs((stored["expires_at"] - stored["created_at"]) - timedelta(days=30)) <= timedelta(seconds=2)
+    assert abs((stored["expires_at"] - stored["created_at"]) - timedelta(days=30)) <= timedelta(
+        seconds=2
+    )
 
     monkeypatch.setenv("AUDIO_SESSION_RETENTION_DAYS", "-5")
     repo2 = InMemoryAudioSessionRepository()
@@ -116,7 +133,9 @@ def test_retention_env_invalid_falls_back_and_clamps(monkeypatch):
     monkeypatch.setenv("AUDIO_SESSION_RETENTION_DAYS", "45")
     repo3 = InMemoryAudioSessionRepository()
     stored3 = repo3.create(_build_session("s-max", api_key_id="k1"))
-    assert abs((stored3["expires_at"] - stored3["created_at"]) - timedelta(days=30)) <= timedelta(seconds=2)
+    assert abs(
+        (stored3["expires_at"] - stored3["created_at"]) - timedelta(days=30)
+    ) <= timedelta(seconds=2)
 
 
 def test_purge_disabled_keeps_expired_sessions(monkeypatch):
@@ -151,7 +170,9 @@ def test_legacy_session_without_expires_at_is_treated_as_expired_on_purge():
             break
 
     repo.purge_expired(now=datetime.utcnow())
-    sessions = repo.list_by_api_key("k1", limit=10, offset=0, api_key_id_autenticada="k1")
+    sessions = repo.list_by_api_key(
+        "k1", limit=10, offset=0, api_key_id_autenticada="k1"
+    )
     assert sessions == []
 
 
@@ -178,7 +199,9 @@ def test_sensitive_fields_persist_when_enabled_with_one_day_ttl(monkeypatch):
 
     assert stored["transcript"] == "t"
     assert stored["reply_text"] == "r"
-    assert abs((stored["expires_at"] - created) - timedelta(days=1)) <= timedelta(seconds=2)
+    assert abs((stored["expires_at"] - created) - timedelta(days=1)) <= timedelta(
+        seconds=2
+    )
 
 
 def test_purge_updates_metrics(monkeypatch):
@@ -191,7 +214,10 @@ def test_purge_updates_metrics(monkeypatch):
     repo.create(_build_session("s-expired", api_key_id="k1"))
 
     snapshot_after = METRICS.snapshot()
-    assert snapshot_after["audio_sessions_purged_total"] >= snapshot_before["audio_sessions_purged_total"] + 1
+    assert (
+        snapshot_after["audio_sessions_purged_total"]
+        >= snapshot_before["audio_sessions_purged_total"] + 1
+    )
     assert snapshot_after["audio_sessions_current"] == 0
 
 

@@ -1,7 +1,7 @@
 import os
 import time
 from threading import Lock
-from typing import Callable, Dict, Iterable, Tuple
+from typing import Any, Awaitable, Callable, Dict, Iterable, Tuple
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -20,13 +20,15 @@ def _is_enabled() -> bool:
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Stub middleware to hook rate limiting behavior."""
 
-    def __init__(self, app, allowlist: Iterable[str] | None = None) -> None:
+    def __init__(self, app: Any, allowlist: Iterable[str] | None = None) -> None:
         super().__init__(app)
         self.allowlist = set(allowlist or ALLOWLIST)
         self._state: Dict[Tuple[str, str], Dict[str, float | int]] = {}
         self._lock = Lock()
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         path = request.url.path
 
         if not _is_enabled() or path in self.allowlist:

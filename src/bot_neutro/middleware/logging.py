@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Callable
+from typing import Awaitable, Callable
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -13,7 +13,9 @@ logging.basicConfig(level=logging.INFO)
 class JSONLoggingMiddleware(BaseHTTPMiddleware):
     """Emit structured JSON logs for inbound requests."""
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         response = await call_next(request)
 
         payload = {
