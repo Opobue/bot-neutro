@@ -148,10 +148,9 @@ En el endpoint `/audio`, la `AudioPipeline` se serializa a HTTP con los siguient
 
 - Respuestas exitosas:
   - `200 OK`
-  - `X-Outcome: success`
-  - `X-Outcome-Detail: audio_processed`
+  - `X-Outcome: ok`
 
-  `audio_processed` indica que el audio fue aceptado, procesado por el stub (STT → LLM → TTS) y que la respuesta incluye `session_id`, `corr_id`, `tts_url`, `usage` y `meta` según se describe en este contrato.
+  La respuesta indica que el audio fue aceptado, procesado por el stub (STT → LLM → TTS) y que la respuesta incluye `session_id`, `corr_id`, `tts_url`, `usage` y `meta` según se describe en este contrato. No se incluye `X-Outcome-Detail` en éxito.
 
 - Respuestas de error (`4xx` / `5xx`):
 
@@ -162,7 +161,7 @@ En el endpoint `/audio`, la `AudioPipeline` se serializa a HTTP con los siguient
     `audio.tts_error`, `audio.provider_timeout`, `audio.storage_error`,
     `audio.internal_error`, etc.).
 
-Otros endpoints del Bot Neutro pueden usar `X-Outcome: ok` en 2xx si así se define en sus respectivos contratos, pero para `/audio` el valor canónico en éxito es `success` con `X-Outcome-Detail: audio_processed`.
+Otros endpoints del Bot Neutro mantienen `X-Outcome: ok` en 2xx conforme al contrato de headers; `/audio` sigue la misma convención y no incluye `X-Outcome-Detail` en éxito.
 
 ### Ejemplo de respuesta exitosa
 

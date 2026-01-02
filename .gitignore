@@ -215,9 +215,11 @@ set_env_azure_speech.ps1
 # Repomix context files
 repomix-output.xml
 repomix-output.txt
+repomix-head.txt
+repomix-pack.zip
+repomix-pack*.zip
 
 # Temporary audit and terminal files
 audit.patch
 cls
-
 
