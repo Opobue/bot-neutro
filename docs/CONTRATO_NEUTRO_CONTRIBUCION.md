@@ -41,6 +41,8 @@ En Windows usar el script `scripts/bootstrap_codex.ps1`.
 ```bash
 python -m pip show httpx
 python -m pip show pytest-cov
+python -m pip show ruff
+python -m pip show mypy
 ```
 
 ### Comandos CI (idénticos a CI)

@@ -3,6 +3,15 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-04 – Bootstrap reproducible: dev extra incluye ruff/mypy
+
+- Bootstrap reproducible: dev extra ahora incluye ruff/mypy; reduce drift CI↔local; ejecutores nuevos listos.
+- Contratos habilitantes citados:
+  - `CONTRATO_NEUTRO_CONTRIBUCION.md` (bootstrap reproducible y checks CI).
+  - `CONTRATO_INFRAESTRUCTURA_GITHUB.md` (alineación de CI con ruff/mypy).
+  - `CONTRATO_SKB_GOBERNANZA.md` (protocolo D→D→C).
+  - `02_ESTADO_Y_NORTE.md` (NORTE v2.1).
+
 ## 2026-01-03 – Bootstrap reproducible para ejecutores (Codex)
 
 - Se documenta un bootstrap reproducible (deps + comandos CI) en `CONTRATO_NEUTRO_CONTRIBUCION.md`.
