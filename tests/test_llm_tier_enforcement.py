@@ -31,7 +31,7 @@ def test_audio_without_tier_header_uses_authorized_tier(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.headers.get("X-Outcome") == "success"
+    assert response.headers.get("X-Outcome") == "ok"
 
 
 def test_audio_allows_requested_tier_below_authorized(monkeypatch):
@@ -50,7 +50,7 @@ def test_audio_allows_requested_tier_below_authorized(monkeypatch):
     )
 
     assert response.status_code == 200
-    assert response.headers.get("X-Outcome") == "success"
+    assert response.headers.get("X-Outcome") == "ok"
 
 
 def test_audio_rejects_requested_tier_above_authorized(monkeypatch):

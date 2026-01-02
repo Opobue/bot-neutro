@@ -3,6 +3,18 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-02 – Refactor API: separar create_app y aplicar contrato de headers
+
+- Se reestructura `src/bot_neutro/api.py` para aislar `create_app()` como constructor explícito de la aplicación y mantener el helper `_with_outcome` dedicado a headers.
+- `_with_outcome` ahora emite `X-Outcome-Detail` solo en respuestas de error, alineado con el contrato de headers.
+- Se inicializa el logger del módulo (`logging.getLogger(__name__)`) para asegurar el handler global de excepciones.
+- Se agregan pruebas de regresión para validar que `X-Outcome-Detail` solo aparece en errores y que `create_app()` se puede invocar sin fallas.
+- Contratos habilitantes citados:
+  - `CONTRATO_NEUTRO_HEADERS.md` (semántica de `X-Outcome`/`X-Outcome-Detail`).
+  - `CONTRATO_INFRAESTRUCTURA_GITHUB.md` (Ruff, Mypy y Pytest en CI).
+  - `CONTRATO_NEUTRO_CONTRIBUCION.md` (pytest y cobertura ≥80 %).
+  - `CONTRATO_SKB_GOBERNANZA.md` (protocolo D→D→C).
+
 ## 2026-01-02 – Corrección de análisis estático y pruebas de preservación de constantes
 
 - Se agregan pruebas de regresión para blindar constantes globales de contrato:
