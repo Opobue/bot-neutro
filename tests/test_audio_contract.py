@@ -39,7 +39,7 @@ def test_audio_happy_path_returns_contract_fields_and_headers():
         assert key in usage
 
     assert response.headers.get("X-Outcome") == "success"
-    assert response.headers.get("X-Outcome-Detail") == "audio_processed"
+    assert "X-Outcome-Detail" not in response.headers
     assert response.headers.get("X-Correlation-Id")
 
 

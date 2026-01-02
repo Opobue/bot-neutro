@@ -73,11 +73,11 @@ CORS_ORIGINS = _parse_cors_origins()
 
 def _with_outcome(response: Response, outcome: str = "ok", detail: str | None = None) -> None:
     response.headers.setdefault("X-Outcome", outcome)
-    if detail:
+    if outcome == "error" and detail is not None:
         response.headers["X-Outcome-Detail"] = detail
 
 
-logger = logging.getLogger("bot_neutro")
+logger = logging.getLogger(__name__)
 
 
 def create_app() -> FastAPI:
@@ -401,7 +401,7 @@ def create_app() -> FastAPI:
                 "meta": res.get("meta"),
             }
             response = JSONResponse(body, status_code=200)
-            _with_outcome(response, outcome="success", detail="audio_processed")
+            _with_outcome(response, outcome="success")
 
         response.headers.setdefault("X-Correlation-Id", corr_id)
         return response
