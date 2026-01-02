@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Dict, Optional
 
 
 @dataclass
 class STTResult:
     text: str
     provider_id: str
-    raw_transcript: Optional[dict] = None
+    raw_transcript: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -37,5 +37,5 @@ class LLMProvider:
     provider_id: str = "llm"
     latency_ms: int = 0
 
-    def generate_reply(self, transcript: str, context: dict) -> str:
+    def generate_reply(self, transcript: str, context: Dict[str, Any]) -> str:
         raise NotImplementedError

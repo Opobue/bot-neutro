@@ -1,12 +1,13 @@
 
+import importlib
 import os
 from unittest import mock
-import importlib
-import pytest
+
 from fastapi.testclient import TestClient
 
 # We'll reload api to test env var changes for CORS
 from bot_neutro import api
+
 
 def test_exception_handler_headers():
     """
@@ -16,9 +17,11 @@ def test_exception_handler_headers():
     - X-Correlation-Id: presente
     """
     # 1. Obtenemos la app (singleton o factory, en este caso get_app usa singleton _APP)
-    #    Para no ensuciar el _APP global con rutas de test, idealmente limpiamos o usamos yield.
-    #    Dado que api.py usa un singleton _APP, lo reseteamos para tener una app limpia si se necesita,
-    #    o simplemente agregamos la ruta y luego la podríamos quitar (complejo).
+    #    Para no ensuciar el _APP global con rutas de test, idealmente limpiamos
+    #    o usamos yield.
+    #    Dado que api.py usa un singleton _APP, lo reseteamos para tener una app
+    #    limpia si se necesita, o simplemente agregamos la ruta y luego la podríamos
+    #    quitar (complejo).
     #    Simplemente agregamos ruta, el impacto es bajo para tests efímeros.
     
     app = api.get_app()

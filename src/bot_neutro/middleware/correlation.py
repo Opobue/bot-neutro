@@ -1,5 +1,5 @@
 import uuid
-from typing import Callable
+from typing import Awaitable, Callable
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
@@ -11,7 +11,9 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
 
     header_name = "X-Correlation-Id"
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         correlation_id = request.headers.get(self.header_name) or str(uuid.uuid4())
         request.state.correlation_id = correlation_id
 

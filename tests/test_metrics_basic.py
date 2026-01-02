@@ -1,7 +1,7 @@
-from bot_neutro.api import create_app
-from bot_neutro.metrics_runtime import METRICS
 from fastapi.testclient import TestClient
 
+from bot_neutro.api import create_app
+from bot_neutro.metrics_runtime import METRICS
 
 client = TestClient(create_app())
 

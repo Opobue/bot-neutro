@@ -3,7 +3,7 @@
 import logging
 import os
 import time
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from .interfaces import LLMProvider
 
@@ -33,7 +33,7 @@ class OpenAILLMProvider(LLMProvider):
         self._client_factory = self._require_client()
 
     @staticmethod
-    def _require_client():
+    def _require_client() -> Any:
         try:
             from openai import OpenAI
         except ImportError as exc:  # pragma: no cover - defensive path
@@ -64,12 +64,12 @@ class OpenAILLMProvider(LLMProvider):
             timeout_seconds=timeout_seconds,
         )
 
-    def _get_client(self):
+    def _get_client(self) -> Any:
         if self._client is None:
             self._client = self._client_factory(api_key=self._api_key, base_url=self._base_url)
         return self._client
 
-    def generate_reply(self, transcript: str, context: dict) -> str:
+    def generate_reply(self, transcript: str, context: Dict[str, Any]) -> str:
         tier = context.get("llm_tier", "freemium") if context else "freemium"
         model = self._model_premium if tier == "premium" else self._model_freemium
 
@@ -77,7 +77,10 @@ class OpenAILLMProvider(LLMProvider):
         client = self._get_client()
 
         messages = [
-            {"role": "system", "content": "Eres el núcleo neutral de Bot Neutro. Responde claro y breve."},
+            {
+                "role": "system",
+                "content": "Eres el núcleo neutral de Bot Neutro. Responde claro y breve.",
+            },
             {"role": "user", "content": transcript},
         ]
 
@@ -87,7 +90,7 @@ class OpenAILLMProvider(LLMProvider):
                 messages=messages,
                 timeout=self._timeout_seconds,
             )
-            reply = response.choices[0].message.content.strip()
+            reply = (response.choices[0].message.content or "").strip()
             self.latency_ms = int((time.perf_counter() - start) * 1000)
             return reply
         except Exception as exc:  # pragma: no cover - requires network

@@ -28,9 +28,15 @@ markers = [
 ]
 
 [tool.ruff]
-select = ["E", "F", "B", "I"] # Errores, Flakes, Bugbear, Isort
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I"] # Errores, Flakes, Bugbear, Isort
+
+[tool.ruff.lint.per-file-ignores]
+"src/bot_neutro/api.py" = ["B008"]
+
 
 [tool.mypy]
 python_version = "3.11"

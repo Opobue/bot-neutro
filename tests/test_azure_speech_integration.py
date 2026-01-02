@@ -5,7 +5,6 @@ import pytest
 from bot_neutro.providers.azure import AzureSTTProvider
 from bot_neutro.providers.stub import StubSTTProvider
 
-
 pytestmark = pytest.mark.azure_integration
 
 

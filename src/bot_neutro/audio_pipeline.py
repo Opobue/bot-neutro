@@ -28,6 +28,7 @@ class AudioRequestContext(TypedDict, total=False):
     user_external_id: Optional[str]
     client_meta: Optional[Dict[str, str]]
     client_metadata: Optional[Dict[str, str]]
+    llm_tier: str
 
 
 class UsageMetrics(TypedDict):
@@ -71,7 +72,9 @@ class AudioPipeline:
         self._tts_provider = tts_provider
         self._llm_provider = llm_provider
 
-    def _error(self, code: str, message: str, details: Optional[Dict[str, str]] = None) -> PipelineError:
+    def _error(
+        self, code: str, message: str, details: Optional[Dict[str, str]] = None
+    ) -> PipelineError:
         return PipelineError(code=code, message=message, details=details)
 
     def _build_usage(
@@ -86,9 +89,13 @@ class AudioPipeline:
         input_seconds = float(getattr(self._stt_provider, "input_seconds", 0.0))
         output_seconds = float(getattr(self._tts_provider, "output_seconds", 0.0))
 
-        provider_stt = getattr(stt_result, "provider_id", getattr(self._stt_provider, "provider_id", "stt"))
+        provider_stt = getattr(
+            stt_result, "provider_id", getattr(self._stt_provider, "provider_id", "stt")
+        )
         provider_llm = getattr(self._llm_provider, "provider_id", "llm")
-        provider_tts = getattr(tts_result, "provider_id", getattr(self._tts_provider, "provider_id", "tts"))
+        provider_tts = getattr(
+            tts_result, "provider_id", getattr(self._tts_provider, "provider_id", "tts")
+        )
 
         total_ms = stt_ms + llm_ms + tts_ms
 

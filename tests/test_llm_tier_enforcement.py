@@ -4,7 +4,6 @@ from bot_neutro.api import create_app
 from bot_neutro.metrics_runtime import METRICS
 from bot_neutro.security_ids import derive_api_key_id
 
-
 client = TestClient(create_app())
 
 

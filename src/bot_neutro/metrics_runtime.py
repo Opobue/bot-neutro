@@ -1,5 +1,5 @@
 from threading import Lock
-from typing import Dict, List
+from typing import Any, Dict, List
 
 
 class InMemoryMetrics:
@@ -35,9 +35,11 @@ class InMemoryMetrics:
         with self._lock:
             self._errors_total[route] = self._errors_total.get(route, 0) + 1
 
-    def inc_llm_tier_denied_total(self, route: str, requested_tier: str, authorized_tier: str) -> None:
+    def inc_llm_tier_denied_total(
+        self, route: str, requested_tier: str | None, authorized_tier: str
+    ) -> None:
         with self._lock:
-            key = (route, requested_tier, authorized_tier)
+            key = (route, requested_tier or "none", authorized_tier)
             self._llm_tier_denied_total[key] = self._llm_tier_denied_total.get(key, 0) + 1
 
     def inc_rate_limit_hit(self) -> None:
@@ -70,7 +72,7 @@ class InMemoryMetrics:
                 if duration_seconds <= bound:
                     self._latency_buckets[route][bound] += 1
 
-    def snapshot(self) -> Dict[str, object]:
+    def snapshot(self) -> Dict[str, Any]:
         with self._lock:
             requests_total = dict(self._requests_total)
             errors_total = dict(self._errors_total)
@@ -92,7 +94,11 @@ class InMemoryMetrics:
                     "authorized_tier": authorized_tier,
                     "value": value,
                 }
-                for (route, requested_tier, authorized_tier), value in self._llm_tier_denied_total.items()
+                for (
+                    route,
+                    requested_tier,
+                    authorized_tier,
+                ), value in self._llm_tier_denied_total.items()
             ]
 
             return {

@@ -1,7 +1,7 @@
-from bot_neutro import __version__
-from bot_neutro.api import create_app
 from fastapi.testclient import TestClient
 
+from bot_neutro import __version__
+from bot_neutro.api import create_app
 
 client = TestClient(create_app())
 
