@@ -149,6 +149,7 @@ En el endpoint `/audio`, la `AudioPipeline` se serializa a HTTP con los siguient
 - Respuestas exitosas:
   - `200 OK`
   - `X-Outcome: ok`
+  - No se incluye `X-Outcome-Detail` en éxito.
 
   La respuesta indica que el audio fue aceptado, procesado por el stub (STT → LLM → TTS) y que la respuesta incluye `session_id`, `corr_id`, `tts_url`, `usage` y `meta` según se describe en este contrato. No se incluye `X-Outcome-Detail` en éxito.
 

@@ -3,6 +3,22 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-04 – Alineación /audio con headers + bootstrap reproducible + CI sin drift + .gitignore repomix
+
+- Runtime: `/audio` ahora limpia `X-Outcome-Detail` en éxito y expone `X-Outcome: error` + `X-Outcome-Detail=audio.bad_request` en errores de validación (400).
+- Runtime: se ajusta el error de validación de `/audio` a `400` (bad_request) y el error no controlado a `audio.internal_error` cuando aplica.
+- Tests: se agrega regresión para validar headers de contrato en errores de validación de `/audio`.
+- Docs: se explicita en `CONTRATO_NEUTRO_AUDIO_PIPELINE.md` que no se incluye `X-Outcome-Detail` en éxito.
+- Infra: `pyproject.toml`, `CI` y `.gitignore` ya estaban alineados con `.[dev]` y artefactos Repomix; no se requirieron cambios.
+- Nota: UI como contrato: `X-Outcome: ok` en 2xx y `X-Outcome-Detail` solo en errores.
+- Contratos habilitantes citados:
+  - `docs/CONTRATO_NEUTRO_HEADERS.md`
+  - `docs/CONTRATO_NEUTRO_AUDIO_PIPELINE.md`
+  - `docs/CONTRATO_NEUTRO_CONTRIBUCION.md`
+  - `docs/CONTRATO_INFRAESTRUCTURA_GITHUB.md`
+  - `docs/CONTRATO_SKB_GOBERNANZA.md`
+  - `docs/02_ESTADO_Y_NORTE.md` (NORTE v2.1)
+
 ## 2026-01-04 – Baseline de rendimiento storage y contrato de escalabilidad (DESCUBRIR)
 
 - Se agrega benchmark reproducible para medir persistencia de sesiones (`scripts/benchmarks/bench_audio_storage.py`).
