@@ -3,6 +3,19 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-04 – Baseline de rendimiento storage y contrato de escalabilidad (DESCUBRIR)
+
+- Se agrega benchmark reproducible para medir persistencia de sesiones (`scripts/benchmarks/bench_audio_storage.py`).
+- Se registra baseline cuantitativo en `docs/benchmarks/storage_baseline.json`.
+- Se documenta contrato de escalabilidad (estado DESCUBRIR) en `docs/CONTRATO_NEUTRO_AUDIO_STORAGE_ESCALABILIDAD.md`.
+- Sin cambios runtime; solo benchmark + docs.
+- Benchmark manual (no se ejecuta en CI).
+- Contratos habilitantes citados:
+  - `docs/CONTRATO_SKB_GOBERNANZA.md` (D→D→C, no mezclar fases).
+  - `docs/02_ESTADO_Y_NORTE.md` (NORTE v2.1: SLOs + UI como contrato).
+  - `docs/CONTRATO_NEUTRO_CONTRIBUCION.md` (checks y disciplina de PR).
+  - `docs/CONTRATO_NEUTRO_AUDIO_STORAGE_PRIVACIDAD.md` (contexto de storage y retención).
+
 ## 2026-01-04 – Bootstrap reproducible: dev extra incluye ruff/mypy
 
 - Bootstrap reproducible: dev extra ahora incluye ruff/mypy; reduce drift CI↔local; ejecutores nuevos listos.
