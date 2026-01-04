@@ -4,6 +4,7 @@ from typing import Any, Awaitable, Callable, Dict, Optional, cast
 from uuid import uuid4
 
 from fastapi import FastAPI, File, Form, Header, Request, UploadFile
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse, Response
 
@@ -75,6 +76,9 @@ def _with_outcome(response: Response, outcome: str = "ok", detail: str | None = 
     response.headers.setdefault("X-Outcome", outcome)
     if outcome == "error" and detail is not None:
         response.headers["X-Outcome-Detail"] = detail
+        return
+    if "X-Outcome-Detail" in response.headers:
+        del response.headers["X-Outcome-Detail"]
 
 
 logger = logging.getLogger(__name__)
@@ -120,11 +124,26 @@ def create_app() -> FastAPI:
             exc_info=exc,
             extra={"corr_id": corr_id}
         )
+        detail_value = (
+            "audio.internal_error" if request.url.path == "/audio" else "internal_error"
+        )
         response = JSONResponse(
             {"detail": "Internal Server Error"},
             status_code=500
         )
-        _with_outcome(response, outcome="error", detail="internal_error")
+        _with_outcome(response, outcome="error", detail=detail_value)
+        response.headers["X-Correlation-Id"] = corr_id
+        return response
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ) -> Response:
+        corr_id = request.headers.get("X-Correlation-Id") or str(uuid4())
+        is_audio = request.url.path == "/audio"
+        response = JSONResponse({"detail": exc.errors()}, status_code=400 if is_audio else 422)
+        detail_value = "audio.bad_request" if is_audio else "validation_error"
+        _with_outcome(response, outcome="error", detail=detail_value)
         response.headers["X-Correlation-Id"] = corr_id
         return response
 

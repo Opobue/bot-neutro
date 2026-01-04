@@ -102,6 +102,16 @@ def test_audio_with_empty_file_returns_bad_request():
     assert "detail" in response.json()
 
 
+def test_audio_validation_error_returns_outcome_detail():
+    response = client.post("/audio", headers={"X-API-Key": "test-key"})
+
+    assert response.status_code == 400
+    assert response.headers.get("X-Outcome") == "error"
+    assert response.headers.get("X-Outcome-Detail") == "audio.bad_request"
+    assert response.headers.get("X-Correlation-Id")
+    assert "detail" in response.json()
+
+
 def test_audio_happy_path_creates_audio_session_in_repository():
     repo = client.app.state.audio_session_repo
     repo.clear()
