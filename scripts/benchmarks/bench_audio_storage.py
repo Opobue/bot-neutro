@@ -29,7 +29,7 @@ from typing import Dict, List
 ROOT_DIR = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT_DIR / "src"))
 
-from bot_neutro.audio_storage import FileAudioSessionRepository
+from bot_neutro.audio_storage import FileAudioSessionRepository  # noqa: E402
 
 
 def _percentile(sorted_values: List[float], percent: float) -> float:
