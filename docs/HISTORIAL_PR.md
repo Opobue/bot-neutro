@@ -3,6 +3,20 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-04 – Deuda mínima /audio: clavar headers 2xx + limpiar docs
+
+- Docs: se elimina duplicación en `docs/CONTRATO_NEUTRO_AUDIO_PIPELINE.md` (en éxito no se incluye `X-Outcome-Detail`).
+- Tests: se “clava” el contrato en 2xx agregando aserciones en happy path:
+  - `X-Outcome: ok`
+  - `X-Outcome-Detail` ausente en éxito.
+- Sin cambios runtime; solo docs + tests.
+
+- Contratos habilitantes citados:
+  - `docs/CONTRATO_SKB_GOBERNANZA.md`
+  - `docs/02_ESTADO_Y_NORTE.md` (NORTE v2.1)
+  - `docs/CONTRATO_NEUTRO_CONTRIBUCION.md`
+  - `docs/CONTRATO_NEUTRO_AUDIO_PIPELINE.md`
+
 ## 2026-01-04 – Alineación /audio con headers + bootstrap reproducible + CI sin drift + .gitignore repomix
 
 - Runtime: `/audio` ahora limpia `X-Outcome-Detail` en éxito y expone `X-Outcome: error` + `X-Outcome-Detail=audio.bad_request` en errores de validación (400).
