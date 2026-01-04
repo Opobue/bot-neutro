@@ -1,0 +1,47 @@
+{
+  "benchmark": "audio_storage",
+  "command": "scripts/benchmarks/bench_audio_storage.py --sessions 5000 --runs 3",
+  "environment": {
+    "cpu_count": 3,
+    "platform": "Linux-6.12.13-x86_64-with-glibc2.39",
+    "python_version": "3.11.12"
+  },
+  "git_sha": "2a938c5fd092bb55fc5225a963ef801de63598dc",
+  "parameters": {
+    "payload_bytes": 1024,
+    "runs": 3,
+    "sessions": 5000,
+    "tmp_dir": ".tmp_bench"
+  },
+  "runs": [
+    {
+      "p50_ms": 63.144119000298815,
+      "p95_ms": 129.86055494984615,
+      "storage_file_bytes": 7487780.0,
+      "throughput_sessions_per_s": 15.612790861412446,
+      "total_ms": 320250.23869100004
+    },
+    {
+      "p50_ms": 33.113071000570926,
+      "p95_ms": 133.05762749937458,
+      "storage_file_bytes": 7487780.0,
+      "throughput_sessions_per_s": 23.341982589112146,
+      "total_ms": 214206.31177799986
+    },
+    {
+      "p50_ms": 33.603966499867965,
+      "p95_ms": 122.74051040026279,
+      "storage_file_bytes": 7487780.0,
+      "throughput_sessions_per_s": 23.983586458808386,
+      "total_ms": 208475.90949699952
+    }
+  ],
+  "summary": {
+    "avg_p50_ms": 43.28705216691257,
+    "avg_p95_ms": 128.5528976164945,
+    "avg_storage_file_bytes": 7487780.0,
+    "avg_throughput_sessions_per_s": 20.979453303110994,
+    "avg_total_ms": 247644.1533219998
+  },
+  "timestamp_utc": "2026-01-04T20:43:26Z"
+}
