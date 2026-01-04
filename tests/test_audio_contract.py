@@ -125,6 +125,8 @@ def test_audio_happy_path_creates_audio_session_in_repository():
     )
 
     assert response.status_code == 200
+    assert response.headers.get("X-Outcome") == "ok"
+    assert response.headers.get("X-Outcome-Detail") is None
     data = response.json()
     session_id = data["session_id"]
 
