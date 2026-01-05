@@ -47,18 +47,59 @@ Fuente: `docs/benchmarks/storage_baseline.json` (timestamp: 2026-01-04T20:43:26Z
 
 Nota: los resultados varían por hardware/FS; el baseline sirve como referencia y debe compararse con el mismo perfil de ejecución.
 
-## 5) Métricas contractuales propuestas (para DECIDIR)
+## 5) Benchmark Sweep v2 (DESCUBRIR)
+Objetivo: obtener una línea base reproducible “Storage Escalabilidad v2” con un sweep de N
+sesiones y comparar p95 de persistencia contra un presupuesto derivado del SLO.
+
+**Preparación:**
+```
+python -m pip install -e ".[dev]"
+```
+
+**Comando recomendado:**
+```
+python scripts/benchmarks/sweep_audio_storage_v2.py --sessions-list "100,500,1000,2000,5000,10000,20000" --payload-bytes-list "0,256,1024" --runs 3 --budget-ms 250 --slo-ms 1500
+```
+
+Artefactos esperados (cuando existan métricas reales):
+- `docs/benchmarks/storage_sweep_v2.json`
+- `docs/benchmarks/storage_sweep_v2.md`
+
+Nota: los artefactos se generan al ejecutar el sweep en la rama del PR; no se incluyen
+en el PR hasta capturar métricas reales.
+
+Por defecto, los outputs se guardan en `./.tmp_bench/out/` y el workdir temporal en
+`./.tmp_bench/work/`; el cleanup solo borra el workdir si no se usa `--keep-tmp`.
+
+**Run local (no ensucia docs):**
+```
+python scripts/benchmarks/sweep_audio_storage_v2.py --sessions-list "100,500,1000,2000,5000,10000,20000" --payload-bytes-list "0,256,1024" --runs 3 --budget-ms 250 --slo-ms 1500
+```
+
+**Export a docs (solo si se decide commitear resultados reales):**
+```
+python scripts/benchmarks/sweep_audio_storage_v2.py --sessions-list "100,500,1000,2000,5000,10000,20000" --payload-bytes-list "0,256,1024" --runs 3 --budget-ms 250 --slo-ms 1500 --output-json docs/benchmarks/storage_sweep_v2.json --output-md docs/benchmarks/storage_sweep_v2.md
+```
+
+Interpretación mínima:
+- `pass_budget` indica si el **promedio** de p95 (`p95_avg_ms`) cumple el presupuesto (default 250 ms).
+- `headroom_ms` es el margen restante (`budget_ms - p95_avg_ms`) para cada combinación.
+- El storage actual tiene complejidad esperada **O(N)** por persistencia y potencial **O(N²)**
+  al crecer N, por lo que el sweep ayuda a detectar el punto de quiebre respecto al SLO
+  (`audio_p95_ms=1500`).
+
+## 6) Métricas contractuales propuestas (para DECIDIR)
 - **Latencia p95 persistencia por sesión:** objetivo ≤ **250 ms** con **N=5000** sesiones.
 - **Capacidad mínima sin degradación crítica:** **N ≥ 5000** sesiones con throughput ≥ **10 sesiones/seg**.
-- **Regla de medición:** ejecutar el benchmark con el comando exacto de la sección 3.
+- **Regla de medición:** ejecutar el benchmark con el comando exacto de la sección 5.
 
 > Nota: estos umbrales son propuestas para discusión en DECIDIR; no son vinculantes en DESCUBRIR.
 
-## 6) Opciones a evaluar en DECIDIR (sin decisión)
+## 7) Opciones a evaluar en DECIDIR (sin decisión)
 - **SQLite (un archivo)** con índices mínimos para sesiones.
 - **Un archivo por sesión** (sharding simple por id/fecha).
 - **Backend pluggable** manteniendo interfaz estable y contratos actuales.
 
-## 7) No metas
+## 8) No metas
 - No se cambia runtime en esta fase.
 - No se reemplaza storage actual por SQLite en DESCUBRIR.
