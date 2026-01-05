@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-04 – Storage escalabilidad v2: sweep N y presupuesto vs SLO (DESCUBRIR)
+
+- Se agrega script sweep v2 (manual, no CI).
+- Los artefactos se generan por ejecución manual (no se commitean placeholders).
+- Se extiende contrato de escalabilidad (se mantiene DESCUBRIR).
+- Sin cambios runtime.
+
 ## 2026-01-04 – Deuda mínima /audio: clavar headers 2xx + limpiar docs
 
 - Docs: se elimina duplicación en `docs/CONTRATO_NEUTRO_AUDIO_PIPELINE.md` (en éxito no se incluye `X-Outcome-Detail`).
