@@ -170,7 +170,8 @@ def _render_markdown(
         lines.append(f"## Payload: {payload_bytes} bytes")
         lines.append("")
         lines.append(
-            "| sessions | avg_p95_ms | avg_p50_ms | avg_throughput | file_size_mb | pass_budget | headroom_ms |"
+            "| sessions | avg_p95_ms | avg_p50_ms | avg_throughput | file_size_mb | "
+            "pass_budget | headroom_ms |"
         )
         lines.append(
             "| --- | --- | --- | --- | --- | --- | --- |"
@@ -185,8 +186,12 @@ def _render_markdown(
             if failure_at is None and not pass_budget:
                 failure_at = str(int(item["sessions"]))
             file_size_mb = float(summary["avg_storage_file_bytes"]) / (1024 * 1024)
+            row_template = (
+                "| {sessions} | {avg_p95:.2f} | {avg_p50:.2f} | {throughput:.2f} | "
+                "{file_size:.2f} | {pass_budget} | {headroom:.2f} |"
+            )
             lines.append(
-                "| {sessions} | {avg_p95:.2f} | {avg_p50:.2f} | {throughput:.2f} | {file_size:.2f} | {pass_budget} | {headroom:.2f} |".format(
+                row_template.format(
                     sessions=int(item["sessions"]),
                     avg_p95=avg_p95_ms,
                     avg_p50=float(summary["avg_p50_ms"]),
