@@ -3,6 +3,20 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-05 – Evidencia SKB: protocolo manual repomix-pack reproducible
+
+- Docs: se agrega protocolo manual de Repomix pack en `docs/CONTRATO_NEUTRO_CONTRIBUCION.md`.
+- Nivel estricto: siempre para cualquier PR.
+- Comando canónico usa `npx repomix`.
+- Checks fallan si falta `.github/workflows`, `pyproject.toml` o `.gitignore`.
+- El comando falla si el working tree no está limpio y valida SHA de head.
+- Sin cambios runtime/infra.
+- Contratos habilitantes citados:
+  - `docs/02_ESTADO_Y_NORTE.md` (NORTE v2.1: contracts-first + disciplina de validación).
+  - `docs/CONTRATO_SKB_GOBERNANZA.md` (D→D→C, no mezclar fases).
+  - `docs/CONTRATO_NEUTRO_CONTRIBUCION.md` (checklist obligatorio).
+  - `docs/CONTRATO_INFRAESTRUCTURA_GITHUB.md` (checks y CI como ley).
+
 ## 2026-01-04 – Storage escalabilidad v2: sweep N y presupuesto vs SLO (DESCUBRIR)
 
 - Se agrega script sweep v2 (manual, no CI).
