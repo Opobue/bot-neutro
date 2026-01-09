@@ -21,6 +21,14 @@ Documento de referencia oficial para cualquier persona (humana o IA) que abra un
 
 ## Evidencia SKB (Repomix Pack) — Protocolo Manual
 
+### CI (Ruta 1) — Fuente por defecto
+- En CI el RepoPack (Repomix) **se genera en el runner (`/tmp`) y no se versiona**.
+- El EvidencePack se deriva desde ese RepoPack y solo se usa para verificación mecánica en el workflow.
+
+### Local (opcional)
+- En local, generar RepoPack es **opcional** (auditoría manual / compartir fuera de CI).
+- Ruta recomendada local (si se usa): `docs/llm/repomix/` (pero **no** se commitea por defecto).
+
 ### CUÁNDO aplica (nivel estricto)
 - Aplica SIEMPRE para cualquier PR.
 
@@ -28,6 +36,7 @@ Documento de referencia oficial para cualquier persona (humana o IA) que abra un
 - `repomix-head.txt` (SHA exacto).
 - `repomix-output*.xml` (considerar split).
 - `repomix-pack.zip` (zip con ambos).
+- `evidence_pack.json` (derivado del RepoPack; **no se versiona**).
 
 ### COMANDO canónico (PowerShell) — copiar/pegar
 ```powershell
@@ -35,32 +44,45 @@ Documento de referencia oficial para cualquier persona (humana o IA) que abra un
 git status
 if (git status --porcelain) { throw "WORKTREE NO LIMPIO: commitea o stash antes de generar evidencia" }
 $head = (git rev-parse HEAD).Trim()
-Set-Content -Path .\repomix-head.txt -Value $head -NoNewline -Encoding ascii
-if ((Get-Content .\repomix-head.txt -Raw).Trim() -ne $head) { throw "SHA mismatch en repomix-head.txt" }
-Remove-Item .\repomix-output*.xml -ErrorAction SilentlyContinue
+Set-Content -Path .\docs\llm\repomix\repomix-head.txt -Value $head -NoNewline -Encoding ascii
+if ((Get-Content .\docs\llm\repomix\repomix-head.txt -Raw).Trim() -ne $head) { throw "SHA mismatch en repomix-head.txt" }
+Remove-Item .\docs\llm\repomix\repomix-output*.xml -ErrorAction SilentlyContinue
 
 npx repomix --style xml --parsable-style --include-full-directory-structure `
   --include "docs/**,src/**,tests/**,scripts/**,.github/**,pyproject.toml,.gitignore,README*,LICENSE*" `
   --ignore  "**/node_modules/**,**/.venv/**,**/.git/**,**/dist/**,**/build/**,**/.tmp_bench/**,**/__pycache__/**,**/.mypy_cache/**,**/.ruff_cache/**,**/.pytest_cache/**,repomix-output*.xml,repomix-*.zip" `
   --split-output 20mb `
-  -o .\repomix-output.xml
+  -o .\docs\llm\repomix\repomix-output.xml
 
-Select-String -Path .\repomix-output*.xml -Pattern ".github/workflows" -Quiet | % { if (-not $_) { throw "FALTA .github/workflows" } }
-Select-String -Path .\repomix-output*.xml -Pattern "pyproject.toml"   -Quiet | % { if (-not $_) { throw "FALTA pyproject.toml" } }
-Select-String -Path .\repomix-output*.xml -Pattern ".gitignore"       -Quiet | % { if (-not $_) { throw "FALTA .gitignore" } }
+Select-String -Path .\docs\llm\repomix\repomix-output*.xml -Pattern ".github/workflows" -Quiet | % { if (-not $_) { throw "FALTA .github/workflows" } }
+Select-String -Path .\docs\llm\repomix\repomix-output*.xml -Pattern "pyproject.toml"   -Quiet | % { if (-not $_) { throw "FALTA pyproject.toml" } }
+Select-String -Path .\docs\llm\repomix\repomix-output*.xml -Pattern ".gitignore"       -Quiet | % { if (-not $_) { throw "FALTA .gitignore" } }
 
-Remove-Item .\repomix-pack.zip -ErrorAction SilentlyContinue
-Remove-Item .\repomix-*.zip -ErrorAction SilentlyContinue
-Compress-Archive -Force -Path .\repomix-head.txt, .\repomix-output*.xml -DestinationPath .\repomix-pack.zip
+Remove-Item .\docs\llm\repomix\repomix-pack.zip -ErrorAction SilentlyContinue
+Remove-Item .\docs\llm\repomix\repomix-*.zip -ErrorAction SilentlyContinue
+Compress-Archive -Force -Path .\docs\llm\repomix\repomix-head.txt, .\docs\llm\repomix\repomix-output*.xml -DestinationPath .\docs\llm\repomix\repomix-pack.zip
 "OK repomix-pack.zip => $head"
 ```
 
+### EvidencePack (derivado, no versionado)
+Generar EvidencePack desde el RepoPack (solo stdlib Python):
+```bash
+python scripts/llm/build_evidence_pack.py \
+  --repomix docs/llm/repomix/repomix-output*.xml \
+  --head docs/llm/repomix/repomix-head.txt \
+  --out docs/llm/evidence
+```
+
 ### CHECKS mínimos de integridad (antes de compartir el pack)
-- El SHA en `repomix-head.txt` coincide con `git rev-parse HEAD`.
-- En `repomix-output*.xml` existen referencias a:
+- El SHA en `docs/llm/repomix/repomix-head.txt` coincide con `git rev-parse HEAD`.
+- En `docs/llm/repomix/repomix-output*.xml` existen referencias a:
   - `.github/workflows`
   - `pyproject.toml`
   - `.gitignore`
+
+### Qué se adjunta al inicio del hilo
+- RepoPack (repomix-output*.xml + repomix-head.txt + zip opcional).
+- EvidencePack (`evidence_pack.json`) **solo si se necesita compartir fuera de CI**.
 
 ### Regla Antigravity (auditoría previa)
 - Para PRs donde Codex cambie código: exigir `git diff --unified=0` pegado en el PR antes del merge.

@@ -14,6 +14,13 @@ Instrucciones para SKB:
 1) Lee completo el NORTE (docs/02_ESTADO_Y_NORTE.md).
 2) Lee completo el HISTORIAL_PR (docs/HISTORIAL_PR.md). La última entrada es la última orden aplicada.
 3) Responde primero con TIPO=DESCUBRIR. Debe incluir diagnóstico del estado actual y propuesta de siguiente ORDEN KAIZEN (L1/L2). No apliques cambios todavía.
+Pack Mode (obligatorio):
+- Fuente única: RepoPack (repomix-output*.xml + repomix-head.txt) generado en CI en el runner (/tmp); no se versiona.
+- EvidencePack derivado en CI (para verificación mecánica).
+- En local: RepoPack es opcional (auditoría manual / compartir fuera de CI).
+- D1 only, no mezclar fases.
+- Regla: EVIDENCIA o NO AFIRMO.
+- Si no hay RepoPack/EvidencePack disponible en el contexto, responder TIPO=BLOQUEO (falta de evidencia).
 ```
 
 ## Protocolo de arranque de SKB (interno)

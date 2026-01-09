@@ -218,6 +218,17 @@ repomix-output*.txt
 repomix-head.txt
 repomix-pack*.zip
 
+# RepoPack local (opcional) — no versionar
+docs/llm/repomix/repomix-output*.xml
+docs/llm/repomix/repomix-output*.txt
+docs/llm/repomix/repomix-head.txt
+docs/llm/repomix/repomix-pack*.zip
+!docs/llm/repomix/.gitkeep
+
+# LLM EvidencePack (derivado)
+docs/llm/evidence/**
+!docs/llm/evidence/.gitkeep
+
 # Temporary audit and terminal files
 audit.patch
 cls

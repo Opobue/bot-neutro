@@ -1,0 +1,130 @@
+name: LLM Governance (D1)
+
+on:
+  pull_request:
+    paths:
+      - docs/llm/**
+      - scripts/llm/**
+      - docs/BOOTSTRAP_SKB_HILO.md
+      - docs/CONTRATO_NEUTRO_CONTRIBUCION.md
+  workflow_dispatch:
+
+concurrency:
+  group: llm-governance-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  LLM-Governance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Detect submissions
+        id: submissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(docs/llm/submissions/*.md)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "has_submissions=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "has_submissions=true" >> "$GITHUB_OUTPUT"
+
+      - name: Skip (no submissions)
+        if: steps.submissions.outputs.has_submissions == 'false'
+        run: echo "No submissions found; skipping LLM governance checks."
+
+      - name: Smoke check scripts (no submissions)
+        if: steps.submissions.outputs.has_submissions == 'false'
+        run: |
+          python scripts/llm/build_evidence_pack.py --help
+          python scripts/llm/lint_d1_output.py --help
+
+      - name: Load base scripts
+        if: steps.submissions.outputs.has_submissions == 'true'
+        id: base_scripts
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          missing_in_base=false
+          if [ -z "${BASE_SHA:-}" ]; then
+            missing_in_base=true
+          else
+            git cat-file -e "$BASE_SHA:scripts/llm/build_evidence_pack.py" 2>/dev/null || missing_in_base=true
+            git cat-file -e "$BASE_SHA:scripts/llm/lint_d1_output.py" 2>/dev/null || missing_in_base=true
+          fi
+          if [ "$missing_in_base" = "true" ]; then
+            echo "LLM governance tooling not present in BASE. Split PR: first add scripts, then add submissions." >&2
+            exit 2
+          fi
+          git show "$BASE_SHA:scripts/llm/build_evidence_pack.py" > /tmp/build_evidence_pack.py
+          git show "$BASE_SHA:scripts/llm/lint_d1_output.py" > /tmp/lint_d1_output.py
+          chmod +x /tmp/build_evidence_pack.py /tmp/lint_d1_output.py
+
+      - name: Generate RepoPack in CI (Repomix -> /tmp)
+        if: steps.submissions.outputs.has_submissions == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f /tmp/repomix-output*.xml /tmp/repomix-head.txt
+          git rev-parse HEAD > /tmp/repomix-head.txt
+          if ! grep -Eq '^[0-9a-fA-F]{40}$' /tmp/repomix-head.txt; then
+            echo "Invalid SHA in /tmp/repomix-head.txt" >&2
+            exit 2
+          fi
+          npx --yes repomix --style xml --parsable-style --include-full-directory-structure \
+            --include "docs/**,src/**,tests/**,scripts/**,.github/**,pyproject.toml,.gitignore,README*,LICENSE*" \
+            --ignore  "**/node_modules/**,**/.venv/**,**/.git/**,**/dist/**,**/build/**,**/.tmp_bench/**,**/__pycache__/**,**/.mypy_cache/**,**/.ruff_cache/**,**/.pytest_cache/**" \
+            --split-output 20mb \
+            -o /tmp/repomix-output.xml
+          shopt -s nullglob
+          repomix_files=(/tmp/repomix-output*.xml)
+          if [ ${#repomix_files[@]} -lt 1 ]; then
+            echo "Repomix did not generate output files in /tmp" >&2
+            exit 2
+          fi
+          grep -q ".github/workflows" "${repomix_files[@]}" || (echo "FALTA .github/workflows en RepoPack" >&2; exit 2)
+          grep -q "pyproject.toml"   "${repomix_files[@]}" || (echo "FALTA pyproject.toml en RepoPack" >&2; exit 2)
+          grep -q ".gitignore"       "${repomix_files[@]}" || (echo "FALTA .gitignore en RepoPack" >&2; exit 2)
+
+      - name: Build EvidencePack
+        if: steps.submissions.outputs.has_submissions == 'true'
+        id: evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence_path=$(python /tmp/build_evidence_pack.py \
+            --repomix /tmp/repomix-output*.xml \
+            --head /tmp/repomix-head.txt \
+            --out docs/llm/evidence)
+          echo "evidence_path=$evidence_path" >> "$GITHUB_OUTPUT"
+
+      - name: Lint D1 submissions
+        if: steps.submissions.outputs.has_submissions == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python /tmp/lint_d1_output.py docs/llm/submissions/*.md \
+            --evidence "${{ steps.evidence.outputs.evidence_path }}"
