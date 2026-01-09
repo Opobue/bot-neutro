@@ -42,22 +42,24 @@ jobs:
           set -euo pipefail
 
           # Determinar base para el diff (PR o push directo a main)
-          BASE_REF="${{ github.base_ref }}"
-          if [ -n "$BASE_REF" ]; then
-            git fetch origin "$BASE_REF"
-            BASE="origin/$BASE_REF"
+          if [ -n "${{ github.base_ref }}" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            CHANGED=$(git diff --name-only "$BASE_SHA"...HEAD)
           else
-            git fetch origin main || true
-            BASE="origin/main"
+            BEFORE="${{ github.event.before }}"
+            AFTER="${{ github.sha }}"
+            if [ -n "${BEFORE:-}" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+              CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
+            else
+              CHANGED=$(git diff --name-only HEAD~1..HEAD)
+            fi
           fi
-
-          CHANGED=$(git diff --name-only "$BASE"...HEAD || git diff --name-only HEAD~1..HEAD)
 
           echo "Archivos cambiados:"
           echo "$CHANGED"
 
           # Buscar cambios en contratos NEUTRO/MUNAY o en el NORTE
-          NEED_HISTORY=$(echo "$CHANGED" | grep -E '^docs/(CONTRATO_|MUNAY_|02_ESTADO_Y_NORTE\.md)' || true)
+          NEED_HISTORY=$(echo "$CHANGED" | grep -E '^docs/(CONTRATO_|MUNAY_|02_ESTADO_Y_NORTE\.md|BOOTSTRAP_SKB_HILO\.md|llm/)' || true)
 
           if [ -n "$NEED_HISTORY" ]; then
             echo "Se detectaron cambios en contratos o en el NORTE:"

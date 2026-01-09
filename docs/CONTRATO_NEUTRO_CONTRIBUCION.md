@@ -15,6 +15,7 @@ Documento de referencia oficial para cualquier persona (humana o IA) que abra un
 
 7. CI REAL vs futuro:
    [ ] Los checks de CI en la orden/PR corresponden a workflows existentes en `.github/workflows`, salvo que esta misma orden los cree o modifique.
+   [ ] Checks mínimos actuales: `CI Tests / CI-Validation`, `Validate NORTE and PR history / validate-norte`, `LLM Governance (D1) / LLM-Governance`.
 
 8. Limpieza de artefactos IA:
    [ ] El texto no contiene patrones tipo "contentReference[", "oaicite:", "<<ImageDisplayed>>" salvo que sean ejemplos explícitos.
