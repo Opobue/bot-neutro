@@ -3,6 +3,18 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-06 – Pack Mode D1: EvidencePack + linter + workflow LLM
+
+- Docs: se agrega `docs/llm/` con README, rúbrica D1 y política operativa para agentes.
+- Scripts: `scripts/llm/build_evidence_pack.py` y `scripts/llm/lint_d1_output.py` para EvidencePack y validación D1.
+- CI: workflow `llm_governance.yml` con path-filter y gate PASS/FAIL determinista.
+- Contratos: se extiende `CONTRATO_NEUTRO_CONTRIBUCION.md` y `BOOTSTRAP_SKB_HILO.md` con Pack Mode (RepoPack + EvidencePack).
+- Sin cambios runtime.
+- Contratos habilitantes citados:
+  - `docs/CONTRATO_SKB_GOBERNANZA.md` (D→D→C, no mezclar fases).
+  - `docs/CONTRATO_NEUTRO_CONTRIBUCION.md` (evidencia y checklist).
+  - `docs/CONTRATO_INFRAESTRUCTURA_GITHUB.md` (CI como ley).
+
 ## 2026-01-05 – Evidencia SKB: protocolo manual repomix-pack reproducible
 
 - Docs: se agrega protocolo manual de Repomix pack en `docs/CONTRATO_NEUTRO_CONTRIBUCION.md`.
@@ -16,6 +28,7 @@
   - `docs/CONTRATO_SKB_GOBERNANZA.md` (D→D→C, no mezclar fases).
   - `docs/CONTRATO_NEUTRO_CONTRIBUCION.md` (checklist obligatorio).
   - `docs/CONTRATO_INFRAESTRUCTURA_GITHUB.md` (checks y CI como ley).
+
 
 ## 2026-01-04 – Storage escalabilidad v2: sweep N y presupuesto vs SLO (DESCUBRIR)
 
