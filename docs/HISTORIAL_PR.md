@@ -3,6 +3,13 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-07 – Infraestructura: trazabilidad bootstrap/llm + check LLM Governance obligatorio
+
+- Infra: `validate_norte.yml` ahora exige HISTORIAL_PR cuando cambian `docs/BOOTSTRAP_SKB_HILO.md` o `docs/llm/**`.
+- Infra: `validate_norte.yml` usa SHAs del evento (`pull_request.base.sha`/`before`/`sha`) para el diff determinista en PR y push.
+- Contratos: `CONTRATO_INFRAESTRUCTURA_GITHUB.md` incorpora el check obligatorio “LLM Governance (D1)” y aclara que el RepoPack se genera en `/tmp`.
+- Docs: se alinea `CONTRATO_NEUTRO_CONTRIBUCION.md` con el nombre del check y el rol mecánico del EvidencePack.
+
 ## 2026-01-06 – Pack Mode D1: EvidencePack + linter + workflow LLM
 
 - Docs: se agrega `docs/llm/` con README, rúbrica D1 y política operativa para agentes.
