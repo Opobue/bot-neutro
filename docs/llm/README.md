@@ -32,6 +32,17 @@ python scripts/llm/lint_d1_output.py docs/llm/submissions/*.md \
   --evidence <ruta_impresa_por_build_evidence_pack>
 ```
 
+## Validación automática (harness)
+Windows (PowerShell):
+```powershell
+.\scripts\llm\validate_llm_d1.ps1 -RepoRoot . -SubmissionSlug "mi_envio" -LlmOutputPath ".\salida.md"
+```
+
+Linux/CI/Codex (bash):
+```bash
+scripts/llm/validate_llm_d1.sh --repo-root . --submission-slug "mi_envio" --llm-output-path "./salida.md"
+```
+
 ## Reglas clave
 - La Fuente Única es el RepoPack; si no está en el pack, no existe.
 - El EvidencePack solo sirve para verificación mecánica; no se commitea.
