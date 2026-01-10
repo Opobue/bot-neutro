@@ -3,6 +3,11 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-08 – Infraestructura: harness D1 para validación LLM (PowerShell + bash)
+
+- Infra/LLM: se añade harness de validación D1 en PowerShell y bash para ejecución local/CI.
+- Docs: se documenta el uso del harness en `docs/llm/README.md`.
+
 ## 2026-01-07 – Infraestructura: trazabilidad bootstrap/llm + check LLM Governance obligatorio
 
 - Infra: `validate_norte.yml` ahora exige HISTORIAL_PR cuando cambian `docs/BOOTSTRAP_SKB_HILO.md` o `docs/llm/**`.
