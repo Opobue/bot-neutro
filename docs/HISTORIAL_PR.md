@@ -3,6 +3,11 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-10 – LLM D1: Bridge Mode (EVIDENCIA_TXT -> SHA256)
+
+- Cambios: `bridge_d1.py` + harness `--bridge`/`-Bridge` + fixtures + docs.
+- Razón: LLMs no citan líneas/hashes consistentemente; Bridge traduce determinísticamente a evidencia criptográfica.
+
 ## 2025-12-23 – Persistencia y retención L2 de sesiones `/audio`
 
 - Se reemplaza el storage in-memory por un repositorio persistente en disco con TTL y purga automática configurable.
