@@ -3,6 +3,11 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-10 – LLM D1: Bridge Mode (EVIDENCIA_TXT -> SHA256)
+
+- Cambios: `bridge_d1.py` + harness `--bridge`/`-Bridge` + fixtures + docs.
+- Razón: LLMs no citan líneas/hashes consistentemente; Bridge traduce determinísticamente a evidencia criptográfica.
+
 ## 2026-01-08 – Infraestructura: harness D1 para validación LLM (PowerShell + bash)
 
 - Infra/LLM: se añade harness de validación D1 en PowerShell y bash para ejecución local/CI.

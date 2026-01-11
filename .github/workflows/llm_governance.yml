@@ -46,9 +46,18 @@ jobs:
           files=(docs/llm/submissions/*.md)
           if [ ${#files[@]} -eq 0 ]; then
             echo "has_submissions=false" >> "$GITHUB_OUTPUT"
+            echo "has_evidencia_txt=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "has_submissions=true" >> "$GITHUB_OUTPUT"
+          has_evidencia_txt=false
+          for f in "${files[@]}"; do
+            if grep -q "EVIDENCIA_TXT" "$f"; then
+              has_evidencia_txt=true
+              break
+            fi
+          done
+          echo "has_evidencia_txt=$has_evidencia_txt" >> "$GITHUB_OUTPUT"
 
       - name: Skip (no submissions)
         if: steps.submissions.outputs.has_submissions == 'false'
@@ -59,6 +68,7 @@ jobs:
         run: |
           python scripts/llm/build_evidence_pack.py --help
           python scripts/llm/lint_d1_output.py --help
+          test -f scripts/llm/bridge_d1.py && python scripts/llm/bridge_d1.py --help || true
 
       - name: Load base scripts
         if: steps.submissions.outputs.has_submissions == 'true'
@@ -66,22 +76,45 @@ jobs:
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HAS_EVIDENCIA_TXT: ${{ steps.submissions.outputs.has_evidencia_txt }}
         run: |
           set -euo pipefail
-          missing_in_base=false
+          # workflow_dispatch / no PR context: allow running with HEAD scripts
           if [ -z "${BASE_SHA:-}" ]; then
-            missing_in_base=true
-          else
-            git cat-file -e "$BASE_SHA:scripts/llm/build_evidence_pack.py" 2>/dev/null || missing_in_base=true
-            git cat-file -e "$BASE_SHA:scripts/llm/lint_d1_output.py" 2>/dev/null || missing_in_base=true
+            echo "No BASE_SHA (not pull_request). Using HEAD scripts."
+            cp scripts/llm/build_evidence_pack.py /tmp/build_evidence_pack.py
+            cp scripts/llm/lint_d1_output.py /tmp/lint_d1_output.py
+            chmod +x /tmp/build_evidence_pack.py /tmp/lint_d1_output.py
+            if [ "${HAS_EVIDENCIA_TXT}" = "true" ]; then
+              if [ ! -f scripts/llm/bridge_d1.py ]; then
+                echo "EVIDENCIA_TXT present but bridge_d1.py not found in HEAD checkout." >&2
+                exit 2
+              fi
+              cp scripts/llm/bridge_d1.py /tmp/bridge_d1.py
+              chmod +x /tmp/bridge_d1.py
+            fi
+            exit 0
           fi
+
+          missing_in_base=false
+          git cat-file -e "$BASE_SHA:scripts/llm/build_evidence_pack.py" 2>/dev/null || missing_in_base=true
+          git cat-file -e "$BASE_SHA:scripts/llm/lint_d1_output.py" 2>/dev/null || missing_in_base=true
+          if [ "${HAS_EVIDENCIA_TXT}" = "true" ]; then
+            git cat-file -e "$BASE_SHA:scripts/llm/bridge_d1.py" 2>/dev/null || missing_in_base=true
+          fi
+
           if [ "$missing_in_base" = "true" ]; then
             echo "LLM governance tooling not present in BASE. Split PR: first add scripts, then add submissions." >&2
             exit 2
           fi
+
           git show "$BASE_SHA:scripts/llm/build_evidence_pack.py" > /tmp/build_evidence_pack.py
           git show "$BASE_SHA:scripts/llm/lint_d1_output.py" > /tmp/lint_d1_output.py
           chmod +x /tmp/build_evidence_pack.py /tmp/lint_d1_output.py
+          if [ "${HAS_EVIDENCIA_TXT}" = "true" ]; then
+            git show "$BASE_SHA:scripts/llm/bridge_d1.py" > /tmp/bridge_d1.py
+            chmod +x /tmp/bridge_d1.py
+          fi
 
       - name: Generate RepoPack in CI (Repomix -> /tmp)
         if: steps.submissions.outputs.has_submissions == 'true'
@@ -121,10 +154,39 @@ jobs:
             --out docs/llm/evidence)
           echo "evidence_path=$evidence_path" >> "$GITHUB_OUTPUT"
 
+      - name: Prepare submissions (optional Bridge)
+        if: steps.submissions.outputs.has_submissions == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/llm_d1_submissions
+          shopt -s nullglob
+          files=(docs/llm/submissions/*.md)
+          if [ ${#files[@]} -lt 1 ]; then
+            echo "No submissions found unexpectedly; nothing to prepare."
+            exit 0
+          fi
+
+          for f in "${files[@]}"; do
+            base="$(basename "$f")"
+            out="/tmp/llm_d1_submissions/$base"
+            if grep -q "EVIDENCIA_TXT" "$f"; then
+              if [ ! -f /tmp/bridge_d1.py ]; then
+                echo "EVIDENCIA_TXT detected but Bridge tooling not present in BASE." >&2
+                echo "Split PR: first merge Bridge (scripts/llm/bridge_d1.py), then add submissions using EVIDENCIA_TXT." >&2
+                exit 2
+              fi
+              python /tmp/bridge_d1.py "$f" --root . --out "$out"
+            else
+              cp "$f" "$out"
+            fi
+          done
+          ls -la /tmp/llm_d1_submissions
+
       - name: Lint D1 submissions
         if: steps.submissions.outputs.has_submissions == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          python /tmp/lint_d1_output.py docs/llm/submissions/*.md \
+          python /tmp/lint_d1_output.py /tmp/llm_d1_submissions/*.md \
             --evidence "${{ steps.evidence.outputs.evidence_path }}"
