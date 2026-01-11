@@ -37,8 +37,11 @@ def parse_evidences(markdown: str, strict: bool) -> list[EvidenceMatch]:
 
     if strict:
         # Si aparece "EVIDENCIA_TXT" pero no matcheó el patrón completo → sintaxis mal formada
+        txt_spans = list(PATTERN_TXT.finditer(markdown))
         for occ in re.finditer(r"EVIDENCIA_TXT", markdown):
-            if not any(occ.start() >= m.start() and occ.start() < m.end() for m in PATTERN_TXT.finditer(markdown)):
+            if not any(
+                occ.start() >= m.start() and occ.start() < m.end() for m in txt_spans
+            ):
                 raise ValueError(f"EVIDENCIA_TXT mal formada cerca de índice {occ.start()}")
 
     return matches
