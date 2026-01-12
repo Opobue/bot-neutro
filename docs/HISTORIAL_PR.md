@@ -3,6 +3,12 @@
 > Convención: el último cambio va arriba. Solo registramos cambios que
 > afectan contratos, comportamiento observable o el Norte del proyecto.
 
+## 2026-01-11 – Docs: protocolo reproducible Bridge Mode (EVIDENCIA_TXT -> SHA256)
+
+- Docs/LLM: se agrega `docs/llm/BRIDGE_MODE_PROTOCOL.md` con el protocolo reproducible para usar/probar/demostrar Bridge Mode.
+- Alcance: validación en Windows (PowerShell) y Bash (WSL/Git-Bash) sin tocar README.
+- Sin cambios runtime. Sin cambios al NORTE.
+
 ## 2026-01-10 – LLM D1: Bridge Mode (EVIDENCIA_TXT -> SHA256)
 
 - Cambios: `bridge_d1.py` + harness `--bridge`/`-Bridge` + fixtures + docs.
